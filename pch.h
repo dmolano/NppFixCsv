@@ -39,4 +39,10 @@
 
 #include "stdlib.h"
 
+#include "menuCmdID.h"
+
+#include "StringUtilities.h"
+
+#include "IntegerSplitter.h"
+
 #endif //PCH_H

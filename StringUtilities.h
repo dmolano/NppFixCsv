@@ -1,3 +1,4 @@
+#pragma once
 /***************************************************************************/
 /*  This program is free software: you can redistribute it and/or modify   */
 /*	it under the terms of the GNU General Public License as published by   */
@@ -18,49 +19,15 @@
 /*  Email: dmolano.smriti@gmail.com                                        */
 /*                                                                         */
 /***************************************************************************/
-#pragma once
 
-#ifndef PLUGINDEFINITION_H
-#define PLUGINDEFINITION_H
+#include <windows.h>
 
-// All difinitions of plugin interface
-//
-#include "PluginInterface.h"
+const int SIZE_DATA_INDEX = 0;
 
-//-------------------------------------//
-//-- STEP 1. DEFINE YOUR PLUGIN NAME --//
-//-------------------------------------//
-// Here define your plugin name
-//
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("NppFixCsv");
+const int SEPARATOR_DATA_INDEX = 1;
 
-const WPARAM NOT_USED_WPARAM = 0L;
+const int SEPARATOR_DEFAULT = ';';
 
-const LPARAM NOT_USED_LPARAM = 0L;
+wchar_t* char2wchar_t(char* original);
 
-//-----------------------------------------------//
-//-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
-//-----------------------------------------------//
-//
-// Here define the number of your plugin commands
-//
-const int NPP_PLUGIN_FUNCTIONS = 3;
-// Action
-const TCHAR NPP_PLUGIN_FIX_MENUITEM_NAME[] = TEXT("Fix");
-// Settings
-const TCHAR NPP_PLUGIN_SETTINGS_MENUITEM_NAME[] = TEXT("Settings...");
-// About
-const TCHAR NPP_PLUGIN_ABOUT_MENUITEM_NAME[] = TEXT("About...");
-
-//
-// Initialization of your plugin data
-// It will be called while plugin loading
-//
-void nppFixCsv_PluginDllProcessAttach(HANDLE hModule);
-
-//
-// nppFixCsv_PluginDllProcessDetach
-//
-void nppFixCsv_PluginDllProcessDetach();
-
-#endif //PLUGINDEFINITION_H
+char* wchar_t2char(wchar_t* original);

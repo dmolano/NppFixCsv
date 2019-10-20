@@ -19,48 +19,35 @@
 /*                                                                         */
 /***************************************************************************/
 #pragma once
+#include "pch.h"
 
-#ifndef PLUGINDEFINITION_H
-#define PLUGINDEFINITION_H
-
-// All difinitions of plugin interface
-//
-#include "PluginInterface.h"
-
-//-------------------------------------//
-//-- STEP 1. DEFINE YOUR PLUGIN NAME --//
-//-------------------------------------//
-// Here define your plugin name
-//
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("NppFixCsv");
-
-const WPARAM NOT_USED_WPARAM = 0L;
-
-const LPARAM NOT_USED_LPARAM = 0L;
-
-//-----------------------------------------------//
-//-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
-//-----------------------------------------------//
-//
-// Here define the number of your plugin commands
-//
-const int NPP_PLUGIN_FUNCTIONS = 3;
-// Action
-const TCHAR NPP_PLUGIN_FIX_MENUITEM_NAME[] = TEXT("Fix");
-// Settings
-const TCHAR NPP_PLUGIN_SETTINGS_MENUITEM_NAME[] = TEXT("Settings...");
-// About
-const TCHAR NPP_PLUGIN_ABOUT_MENUITEM_NAME[] = TEXT("About...");
+#define INTEGER_SPLITTER_NULL 0
+#define INTEGER_SPLITTER_NO_ERROR 0
+#define INITIAL_STATE_SPLITTER 0
+#define SEPARATOR_STATE_SPLITTER 1
+#define DIGIT_STATE_SPLITTER 2
+#define ERROR_STATE_SPLITTER 3
+#define MAX_DIGITS_LENGTH 5 // 99999
+#define BASE_10 10
+#define LAST_SEPARATOR 0
 
 //
-// Initialization of your plugin data
-// It will be called while plugin loading
-//
-void nppFixCsv_PluginDllProcessAttach(HANDLE hModule);
+// IntegerSplit
+// 
+typedef struct IntegerSplit { //name of the structure
+	int integer;
+	int separator;
+	struct IntegerSplit* next;
+}IntegerSplitType;// type of data to declare the structure
+
+typedef IntegerSplitType* IntegerSplitPtr;
 
 //
-// nppFixCsv_PluginDllProcessDetach
+// integerSplitter_Init
 //
-void nppFixCsv_PluginDllProcessDetach();
+int integerSplitter_Init(IntegerSplitPtr* integerSplitPtr);
 
-#endif //PLUGINDEFINITION_H
+//
+// integerSplitter_Split
+//
+IntegerSplitPtr integerSplitter_Split(const char* string);
