@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AboutDlgProc.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IntegerSplitter.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
@@ -162,9 +163,11 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PluginInterface.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SettingsDlgProc.h" />
     <ClInclude Include="StringUtilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AboutDlgProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="IntegerSplitter.cpp" />
     <ClCompile Include="NppFixCsv.cpp" />
@@ -174,6 +177,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SettingsDlgProc.cpp" />
     <ClCompile Include="StringUtilities.cpp" />
   </ItemGroup>
   <ItemGroup>

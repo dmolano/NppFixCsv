@@ -39,6 +39,12 @@
     <ClInclude Include="IntegerSplitter.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="AboutDlgProc.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsDlgProc.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -54,6 +60,12 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="IntegerSplitter.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDlgProc.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsDlgProc.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

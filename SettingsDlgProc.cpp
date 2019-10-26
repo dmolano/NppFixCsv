@@ -18,35 +18,55 @@
 /*  Email: dmolano.smriti@gmail.com                                        */
 /*                                                                         */
 /***************************************************************************/
+#include "pch.h"
 
-// pch.h: este es un archivo de encabezado precompilado.
-// Los archivos que se muestran a continuación se compilan solo una vez, lo que mejora el rendimiento de la compilación en futuras compilaciones.
-// Esto también afecta al rendimiento de IntelliSense, incluida la integridad del código y muchas funciones de exploración del código.
-// Sin embargo, los archivos que se muestran aquí se vuelven TODOS a compilar si alguno de ellos se actualiza entre compilaciones.
-// No agregue aquí los archivos que se vayan a actualizar con frecuencia, ya que esto invalida la ventaja de rendimiento.
+//
+// settingsDlgProc_DialogFunc
+//
+INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+		HWND hwndOwner;
+		RECT rc, rcDlg, rcOwner;
 
-#ifndef PCH_H
-#define PCH_H
-
-// agregue aquí los encabezados que desea precompilar
-#include "framework.h"
-
-#include "NppFixCsv.h"
-
-#include "resource.h"
-
-#include "stdio.h"
-
-#include "stdlib.h"
-
-#include "menuCmdID.h"
-
-#include "StringUtilities.h"
-
-#include "IntegerSplitter.h"
-
-#include "AboutDlgProc.h"
-
-#include "SettingsDlgProc.h"
-
-#endif //PCH_H
+		// Get the owner window and dialog box rectangles. 
+		if ((hwndOwner = GetParent(hWndDlg)) == NULL) {
+			hwndOwner = GetDesktopWindow();
+		}
+		GetWindowRect(hwndOwner, &rcOwner);
+		GetWindowRect(hWndDlg, &rcDlg);
+		CopyRect(&rc, &rcOwner);
+		// Offset the owner and dialog box rectangles so that right and bottom 
+		// values represent the width and height, and then offset the owner again 
+		// to discard space taken up by the dialog box. 
+		OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+		OffsetRect(&rc, -rc.left, -rc.top);
+		OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+		// The new position is the sum of half the remaining space and the owner's 
+		// original position. 
+		SetWindowPos(hWndDlg,
+			HWND_TOP,
+			rcOwner.left + (rc.right / 2),
+			rcOwner.top + (rc.bottom / 2),
+			0, 0,          // Ignores size arguments. 
+			SWP_NOSIZE);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			EndDialog(hWndDlg, 1);
+			break;
+		case IDCANCEL:
+			EndDialog(hWndDlg, 0);
+			break;
+		}
+		break;
+	case WM_CLOSE:
+		EndDialog(hWndDlg, 0);
+		return TRUE;
+	}
+	return FALSE;
+}

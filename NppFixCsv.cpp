@@ -42,53 +42,6 @@ wchar_t* lengthsUnicodeDataStringSettings = NULL;
 //
 IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
 
-//
-// nppFixCsv_AboutDlgProc
-//
-INT_PTR CALLBACK nppFixCsv_AboutDlgProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_INITDIALOG:
-		HWND hwndOwner;
-		RECT rc, rcDlg, rcOwner;
-
-		// Get the owner window and dialog box rectangles. 
-		if ((hwndOwner = GetParent(hWndDlg)) == NULL) {
-			hwndOwner = GetDesktopWindow();
-		}
-		GetWindowRect(hwndOwner, &rcOwner);
-		GetWindowRect(hWndDlg, &rcDlg);
-		CopyRect(&rc, &rcOwner);
-		// Offset the owner and dialog box rectangles so that right and bottom 
-		// values represent the width and height, and then offset the owner again 
-		// to discard space taken up by the dialog box. 
-		OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
-		OffsetRect(&rc, -rc.left, -rc.top);
-		OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
-		// The new position is the sum of half the remaining space and the owner's 
-		// original position. 
-		SetWindowPos(hWndDlg,
-			HWND_TOP,
-			rcOwner.left + (rc.right / 2),
-			rcOwner.top + (rc.bottom / 2),
-			0, 0,          // Ignores size arguments. 
-			SWP_NOSIZE);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDOK:
-			EndDialog(hWndDlg, 1);
-			break;
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog(hWndDlg, 0);
-		return TRUE;
-	}
-	return FALSE;
-}
 //----------------------------------------------//
 //-- STEP 4. DEFINE YOUR ASSOCIATED FUNCTIONS --//
 //----------------------------------------------//
@@ -104,6 +57,8 @@ void nppFixCsv_FunctionFix()
 //
 void nppFixCsv_FunctionSettingsDlg()
 {
+	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc) == 1) {
+	}
 }
 
 //
@@ -111,7 +66,7 @@ void nppFixCsv_FunctionSettingsDlg()
 //
 void nppFixCsv_FunctionAboutDlg()
 {
-	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_ABOUT), nppData._nppHandle, nppFixCsv_AboutDlgProc) == 1) {
+	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_ABOUT), nppData._nppHandle, aboutDlgProc_DialogFunc) == 1) {
 	}
 }
 
