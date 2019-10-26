@@ -62,14 +62,18 @@ int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 		wchar_t* lengthsUnicodeDataSettingsTemporal = new wchar_t[lengthData + 1];
 		SendMessage(editTextHwnd, WM_GETTEXT, lengthData + 1, LPARAM(lengthsUnicodeDataSettingsTemporal));
 		char* lengthsDataSettingsTemporal = wchar_t2char(lengthsUnicodeDataSettingsTemporal);
-		integerSplitList = integerSplitter_Split(lengthsDataSettingsTemporal);
+		IntegerSplitPtr integerSplitListTemporal = integerSplitter_Split(lengthsDataSettingsTemporal);
 		delete[] lengthsDataSettingsTemporal;
-		if (integerSplitList != NULL) {
+		if (integerSplitListTemporal != NULL) {
 			if (lengthsUnicodeDataStringSettings != NULL) {
 				delete[] lengthsUnicodeDataStringSettings;
 				lengthsUnicodeDataStringSettings = NULL;
 			}
+			if (integerSplitList != NULL) {
+				integerSplitter_Init(&integerSplitList);
+			}
 			lengthsUnicodeDataStringSettings = lengthsUnicodeDataSettingsTemporal;
+			integerSplitList = integerSplitListTemporal;
 			result = TRUE;
 		}
 		else {
