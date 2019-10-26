@@ -18,29 +18,9 @@
 /*  Email: dmolano.smriti@gmail.com                                        */
 /*                                                                         */
 /***************************************************************************/
-#include "pch.h"
+#pragma once
 
 //
-// aboutDlgProc_DialogFunc
+// centerWndDlg
 //
-INT_PTR CALLBACK aboutDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_INITDIALOG:
-		centerWndDlg(hWndDlg);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDOK:
-			EndDialog(hWndDlg, 1);
-			break;
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog(hWndDlg, 0);
-		return TRUE;
-	}
-	return FALSE;
-}
+void centerWndDlg(const HWND hWndDlg);

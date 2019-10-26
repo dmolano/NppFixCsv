@@ -43,6 +43,8 @@
 
 #include "StringUtilities.h"
 
+#include "WindowUtilities.h"
+
 #include "IntegerSplitter.h"
 
 #include "AboutDlgProc.h"

@@ -165,6 +165,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SettingsDlgProc.h" />
     <ClInclude Include="StringUtilities.h" />
+    <ClInclude Include="WindowUtilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlgProc.cpp" />
@@ -179,6 +180,7 @@
     </ClCompile>
     <ClCompile Include="SettingsDlgProc.cpp" />
     <ClCompile Include="StringUtilities.cpp" />
+    <ClCompile Include="WindowUtilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

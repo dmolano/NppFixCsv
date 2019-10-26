@@ -21,26 +21,32 @@
 #include "pch.h"
 
 //
-// aboutDlgProc_DialogFunc
+// centerWndDlg
 //
-INT_PTR CALLBACK aboutDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void centerWndDlg(const HWND hWndDlg)
 {
-	switch (uMsg)
-	{
-	case WM_INITDIALOG:
-		centerWndDlg(hWndDlg);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDOK:
-			EndDialog(hWndDlg, 1);
-			break;
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog(hWndDlg, 0);
-		return TRUE;
+	HWND hwndOwner;
+	RECT rc, rcDlg, rcOwner;
+
+	// Get the owner window and dialog box rectangles. 
+	if ((hwndOwner = GetParent(hWndDlg)) == NULL) {
+		hwndOwner = GetDesktopWindow();
 	}
-	return FALSE;
+	GetWindowRect(hwndOwner, &rcOwner);
+	GetWindowRect(hWndDlg, &rcDlg);
+	CopyRect(&rc, &rcOwner);
+	// Offset the owner and dialog box rectangles so that right and bottom 
+	// values represent the width and height, and then offset the owner again 
+	// to discard space taken up by the dialog box. 
+	OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+	OffsetRect(&rc, -rc.left, -rc.top);
+	OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+	// The new position is the sum of half the remaining space and the owner's 
+	// original position. 
+	SetWindowPos(hWndDlg,
+		HWND_TOP,
+		rcOwner.left + (rc.right / 2),
+		rcOwner.top + (rc.bottom / 2),
+		0, 0,          // Ignores size arguments. 
+		SWP_NOSIZE);
 }

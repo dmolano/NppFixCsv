@@ -21,6 +21,65 @@
 #include "pch.h"
 
 //
+// lengthsUnicodeDataStringSettings
+//
+extern wchar_t* lengthsUnicodeDataStringSettings;
+
+//
+// integerSplitList
+//
+extern IntegerSplitPtr integerSplitList;
+
+
+//
+// settinsDlgProc_InitEditAndButton
+//
+void settinsDlgProc_InitEditAndButton(HWND hWndDlg) {
+	HWND editTextHwnd;
+	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+	SetFocus(editTextHwnd);
+	HWND buttonOkHwnd;
+	buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
+	if (lengthsUnicodeDataStringSettings != NULL) {
+		SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(lengthsUnicodeDataStringSettings));
+		SendDlgItemMessage(editTextHwnd, IDC_EDIT_LENGTHS, EM_SETSEL, 0, -1);
+		EnableWindow(buttonOkHwnd, TRUE);
+	}
+	else {
+		EnableWindow(buttonOkHwnd, FALSE);
+	}
+}
+
+//
+// settingsDlgProc_IsLengthsOk
+//
+int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
+	int result = FALSE;
+	HWND editTextHwnd;
+	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+	LRESULT lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	if (lengthData > 0) {
+		wchar_t* lengthsUnicodeDataSettingsTemporal = new wchar_t[lengthData + 1];
+		SendMessage(editTextHwnd, WM_GETTEXT, lengthData + 1, LPARAM(lengthsUnicodeDataSettingsTemporal));
+		char* lengthsDataSettingsTemporal = wchar_t2char(lengthsUnicodeDataSettingsTemporal);
+		integerSplitList = integerSplitter_Split(lengthsDataSettingsTemporal);
+		delete[] lengthsDataSettingsTemporal;
+		if (integerSplitList != NULL) {
+			if (lengthsUnicodeDataStringSettings != NULL) {
+				delete[] lengthsUnicodeDataStringSettings;
+				lengthsUnicodeDataStringSettings = NULL;
+			}
+			lengthsUnicodeDataStringSettings = lengthsUnicodeDataSettingsTemporal;
+			result = TRUE;
+		}
+		else {
+			delete[] lengthsUnicodeDataSettingsTemporal;
+		}
+	}
+	return result;
+}
+
+//
 // settingsDlgProc_DialogFunc
 //
 INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -28,36 +87,36 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		HWND hwndOwner;
-		RECT rc, rcDlg, rcOwner;
-
-		// Get the owner window and dialog box rectangles. 
-		if ((hwndOwner = GetParent(hWndDlg)) == NULL) {
-			hwndOwner = GetDesktopWindow();
-		}
-		GetWindowRect(hwndOwner, &rcOwner);
-		GetWindowRect(hWndDlg, &rcDlg);
-		CopyRect(&rc, &rcOwner);
-		// Offset the owner and dialog box rectangles so that right and bottom 
-		// values represent the width and height, and then offset the owner again 
-		// to discard space taken up by the dialog box. 
-		OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
-		OffsetRect(&rc, -rc.left, -rc.top);
-		OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
-		// The new position is the sum of half the remaining space and the owner's 
-		// original position. 
-		SetWindowPos(hWndDlg,
-			HWND_TOP,
-			rcOwner.left + (rc.right / 2),
-			rcOwner.top + (rc.bottom / 2),
-			0, 0,          // Ignores size arguments. 
-			SWP_NOSIZE);
+		centerWndDlg(hWndDlg);
+		settinsDlgProc_InitEditAndButton(hWndDlg);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDC_EDIT_LENGTHS:
+			if (HIWORD(wParam) == EN_CHANGE)
+			{
+				HWND editTextHwnd;
+				editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+				LRESULT lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+				HWND buttonOkHwnd;
+				buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
+				if (lengthData == 0) {
+					EnableWindow(buttonOkHwnd, FALSE);
+					Beep(1000, 10);
+				}
+				else {
+					EnableWindow(buttonOkHwnd, TRUE);
+				}
+			}
+			break;
 		case IDOK:
-			EndDialog(hWndDlg, 1);
+			if (settingsDlgProc_IsLengthsOk(hWndDlg, wParam, lParam) == TRUE) {
+				EndDialog(hWndDlg, 1);
+			}
+			else {
+				::MessageBox(hWndDlg, TEXT("Error. Invalid lengths separator.\r\nRight format: number separator number ...\r\nExamples: 10;20;30\r\n\t10:20:30"), NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+			}
 			break;
 		case IDCANCEL:
 			EndDialog(hWndDlg, 0);

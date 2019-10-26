@@ -128,6 +128,11 @@ void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
 // nppFixCsv_PluginDllProcessDetach
 //    
 void nppFixCsv_PluginDllProcessDetach() {
+	if (lengthsUnicodeDataStringSettings != NULL) {
+		delete[] lengthsUnicodeDataStringSettings;
+		lengthsUnicodeDataStringSettings = NULL;
+	}
+	integerSplitter_Init(&integerSplitList);
 }
 
 //
