@@ -25,6 +25,10 @@
 //
 extern IntegerSplitPtr integerSplitList;
 
+DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam);
+
+HANDLE fixThreadHandle;
+
 //
 // fixDlgProc_DialogFunc
 //
@@ -34,6 +38,7 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	{
 	case WM_INITDIALOG:
 		centerWndDlg(hWndDlg);
+		fixThreadHandle = CreateThread(NULL, 0, fixDlgProc_Fix, hWndDlg, 0, NULL);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -49,3 +54,12 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	}
 	return FALSE;
 }
+
+//
+// fixDlgProc_Fix
+//
+DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam) {
+	Sleep(3000);
+	return 0;
+}
+
