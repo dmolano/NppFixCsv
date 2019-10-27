@@ -47,10 +47,13 @@ const LPARAM NOT_USED_LPARAM = 0L;
 const int NPP_PLUGIN_FUNCTIONS = 3;
 // Action
 const TCHAR NPP_PLUGIN_FIX_MENUITEM_NAME[] = TEXT("Fix");
+const int NPP_PLUGIN_FIX_MENUITEM_INDEX = 0;
 // Settings
 const TCHAR NPP_PLUGIN_SETTINGS_MENUITEM_NAME[] = TEXT("Settings...");
+const int NPP_PLUGIN_SETTINGS_MENUITEM_INDEX = 1;
 // About
 const TCHAR NPP_PLUGIN_ABOUT_MENUITEM_NAME[] = TEXT("About...");
+const int NPP_PLUGIN_ABOUT_MENUITEM_INDEX = 2;
 
 //
 // Initialization of your plugin data

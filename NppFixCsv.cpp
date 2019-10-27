@@ -61,6 +61,7 @@ void nppFixCsv_FunctionSettingsDlg()
 {
 	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc) == 1) {
 	}
+	enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (integerSplitList != NULL));
 }
 
 //
@@ -113,9 +114,9 @@ void nppFixCsv_CommandMenuInit()
 	//            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
 	//            bool check0nInit                // optional. Make this menu item be checked visually
 	//            );
-	nppFixCsv_SetPluginCommand(0, NPP_PLUGIN_FIX_MENUITEM_NAME, nppFixCsv_FunctionFix, NULL, false);
-	nppFixCsv_SetPluginCommand(1, NPP_PLUGIN_SETTINGS_MENUITEM_NAME, nppFixCsv_FunctionSettingsDlg, NULL, false);
-	nppFixCsv_SetPluginCommand(2, NPP_PLUGIN_ABOUT_MENUITEM_NAME, nppFixCsv_FunctionAboutDlg, NULL, false);
+	nppFixCsv_SetPluginCommand(NPP_PLUGIN_FIX_MENUITEM_INDEX, NPP_PLUGIN_FIX_MENUITEM_NAME, nppFixCsv_FunctionFix, NULL, false);
+	nppFixCsv_SetPluginCommand(NPP_PLUGIN_SETTINGS_MENUITEM_INDEX, NPP_PLUGIN_SETTINGS_MENUITEM_NAME, nppFixCsv_FunctionSettingsDlg, NULL, false);
+	nppFixCsv_SetPluginCommand(NPP_PLUGIN_ABOUT_MENUITEM_INDEX, NPP_PLUGIN_ABOUT_MENUITEM_NAME, nppFixCsv_FunctionAboutDlg, NULL, false);
 }
 
 //
@@ -172,12 +173,12 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
 {
 	switch (notifyCode->nmhdr.code)
 	{
+	case NPPN_READY: 
+		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
+		break;
 	case NPPN_SHUTDOWN:
-	{
 		nppFixCsv_CommandMenuCleanUp();
-	}
-	break;
-
+		break;
 	default:
 		return;
 	}

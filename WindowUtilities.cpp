@@ -50,3 +50,13 @@ void centerWndDlg(const HWND hWndDlg)
 		0, 0,          // Ignores size arguments. 
 		SWP_NOSIZE);
 }
+
+//
+// enableMenuItem
+//
+void enableMenuItem(const HWND hWnd, const int cmdID, const int enable) {
+	HMENU hMenu = (HMENU)::SendMessage(hWnd, NPPM_GETMENUHANDLE, NPPPLUGINMENU, 0);
+	::EnableMenuItem(hMenu, cmdID,
+		MF_BYCOMMAND | (enable ? MF_ENABLED : MF_DISABLED) | (enable ?  MF_DEFAULT: MF_GRAYED));
+
+}

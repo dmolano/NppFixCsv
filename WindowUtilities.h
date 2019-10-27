@@ -24,3 +24,8 @@
 // centerWndDlg
 //
 void centerWndDlg(const HWND hWndDlg);
+
+//
+// enableMenuItem
+//
+void enableMenuItem(const HWND hWnd, const int cmdID, const int enable);
