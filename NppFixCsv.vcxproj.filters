@@ -48,6 +48,9 @@
     <ClInclude Include="WindowUtilities.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="FixDlgProc.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -72,6 +75,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="WindowUtilities.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="FixDlgProc.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

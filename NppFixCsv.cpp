@@ -50,6 +50,8 @@ IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
 //
 void nppFixCsv_FunctionFix()
 {
+	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), nppData._nppHandle, fixDlgProc_DialogFunc) == 1) {
+	}
 }
 
 //

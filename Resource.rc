@@ -81,6 +81,16 @@ BEGIN
     EDITTEXT        IDC_EDIT_LENGTHS,16,17,278,14,ES_AUTOHSCROLL
 END
 
+IDD_DIALOG_FIX DIALOGEX 0, 0, 309, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+CAPTION "FixCsv - Fix"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancelar",IDCANCEL,252,37,50,14
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,7,7,295,14
+    LTEXT           "Fixing...",IDC_STATIC,10,24,28,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -105,6 +115,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 59
     END
+
+    IDD_DIALOG_FIX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -120,6 +138,11 @@ BEGIN
 END
 
 IDD_DIALOG_SETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_FIX AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

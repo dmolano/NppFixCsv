@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlgProc.h" />
+    <ClInclude Include="FixDlgProc.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IntegerSplitter.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
@@ -170,6 +171,7 @@
   <ItemGroup>
     <ClCompile Include="AboutDlgProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FixDlgProc.cpp" />
     <ClCompile Include="IntegerSplitter.cpp" />
     <ClCompile Include="NppFixCsv.cpp" />
     <ClCompile Include="pch.cpp">
