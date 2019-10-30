@@ -25,9 +25,21 @@
 //
 extern IntegerSplitPtr integerSplitList;
 
-DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam);
-
+//
+// fixThreadHandle
+//
 HANDLE fixThreadHandle;
+
+//
+// fixDlgProc_Fix
+//
+DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam) {
+	HWND hWndDlg;
+	hWndDlg = (HWND)lpParam;
+	Sleep(3000);
+	SendMessage(hWndDlg, WM_CLOSE, 0, 0);
+	return 0;
+}
 
 //
 // fixDlgProc_DialogFunc
@@ -39,27 +51,30 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	case WM_INITDIALOG:
 		centerWndDlg(hWndDlg);
 		fixThreadHandle = CreateThread(NULL, 0, fixDlgProc_Fix, hWndDlg, 0, NULL);
+		if (fixThreadHandle == NULL) {
+			EndDialog(hWndDlg, 0);
+		}
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case IDCANCEL:
-			EndDialog(hWndDlg, 0);
+			if (fixThreadHandle != NULL) {
+//				CloseHandle(fixThreadHandle);
+//				fixThreadHandle = NULL;
+			}
 			break;
 		}
 		break;
 	case WM_CLOSE:
 		EndDialog(hWndDlg, 0);
+		if (fixThreadHandle != NULL) {
+			CloseHandle(fixThreadHandle);
+			fixThreadHandle = NULL;
+		}
 		return TRUE;
 	}
 	return FALSE;
 }
 
-//
-// fixDlgProc_Fix
-//
-DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam) {
-	Sleep(3000);
-	return 0;
-}
 
