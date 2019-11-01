@@ -9,6 +9,8 @@
 #define IDD_DIALOG_FIX                  105
 #define IDC_EDIT_LENGTHS                1001
 #define IDC_PROGRESS1                   1002
+#define IDC_PROGRESSBAR_FIXING          1002
+#define IDC_STATIC_ACTION               1003
 
 // Next default values for new objects
 // 
@@ -16,7 +18,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

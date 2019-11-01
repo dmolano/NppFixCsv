@@ -39,6 +39,8 @@
 
 #include "stdlib.h"
 
+#include "commctrl.h"
+
 #include "menuCmdID.h"
 
 #include "StringUtilities.h"

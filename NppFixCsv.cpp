@@ -20,6 +20,14 @@
 /***************************************************************************/
 #include "pch.h"
 
+//
+// fixThreadHandle
+//
+extern HANDLE fixThreadHandle;
+
+//
+// g_DllhInst
+//
 HINSTANCE g_DllhInst;
 
 //
@@ -131,6 +139,10 @@ void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
 // nppFixCsv_PluginDllProcessDetach
 //    
 void nppFixCsv_PluginDllProcessDetach() {
+	if (fixThreadHandle != NULL) {
+		CloseHandle(fixThreadHandle);
+		fixThreadHandle = NULL;
+	}
 	if (lengthsUnicodeDataStringSettings != NULL) {
 		delete[] lengthsUnicodeDataStringSettings;
 		lengthsUnicodeDataStringSettings = NULL;
