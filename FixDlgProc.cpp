@@ -24,47 +24,41 @@
 // integerSplitList
 //
 extern IntegerSplitPtr integerSplitList;
-
+//
+// The data of Notepad++ that you can use in your plugin commands
+//
+extern NppData nppData;
 //
 // fixThreadHandle
 //
 HANDLE fixThreadHandle = NULL;
-
 //
 // semaphoreCancel
 //
 int semaphoreCancel = FALSE;
-
 //
 // progressBarHandle
 //
 HWND progressBarHandle;
-
 //
 // buttonCancelHandle
 //
 HWND staticActionHandle;
-
 //
 // buttonCancelHandle
 //
 HWND buttonCancelHandle;
-
 //
 // progressBarRange
 //
 PBRANGE progressBarRange;
-
 //
 // curScintilla
 //
 HWND curScintilla;
 //
-// The data of Notepad++ that you can use in your plugin commands
+// sciLineCount
 //
-extern NppData nppData;
-
-
 LRESULT sciLineCount;
 
 //
