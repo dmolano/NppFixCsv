@@ -133,7 +133,7 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 		case IDCANCEL:
 			semaphoreCancel = TRUE;
 			EnableWindow(buttonCancelHandle, FALSE);
-			SendMessage(staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT("Canceling...")));
+			SendMessage(staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
 			return TRUE;
 		default:
 			break;

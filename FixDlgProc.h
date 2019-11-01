@@ -20,6 +20,8 @@
 /***************************************************************************/
 #pragma once
 
+#define CANCELING_TEXT "Canceling..."
+
 //
 // fixDlgProc_DialogFunc
 //
