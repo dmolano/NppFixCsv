@@ -58,15 +58,15 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,254,125,50,14
     GROUPBOX        "Plugin",IDC_STATIC,7,7,297,19
-    CTEXT           "Dionisio Molano Robledo",IDC_STATIC,117,34,78,8
-    CTEXT           "NppFixCsv a.k.a FixCsv",IDC_STATIC,117,14,77,8
-    CTEXT           "0.1",IDC_STATIC,149,52,12,8
-    CTEXT           "GPL v.3.0",IDC_STATIC,139,71,32,8
+    CTEXT           "Dionisio Molano Robledo",IDC_STATIC,53,34,206,8
+    CTEXT           "NppFixCsv a.k.a FixCsv",IDC_STATIC,53,14,206,8
+    CTEXT           "0.1",IDC_STATIC,53,52,206,8
+    CTEXT           "GPL v.3.0",IDC_STATIC,53,71,206,8
     GROUPBOX        "Author",IDC_STATIC,7,26,297,19
     GROUPBOX        "Version",IDC_STATIC,7,45,297,19
     GROUPBOX        "License",IDC_STATIC,7,64,297,19
     GROUPBOX        "Contact",IDC_STATIC,7,83,297,32
-    CTEXT           "dmolano.smriti@gmail.com",IDC_STATIC,25,90,253,8
+    CTEXT           "dmolano.smriti@gmail.com",IDC_STATIC,53,90,206,8
     CTEXT           "Please, start email's subject with prefix ""NPPFIXCSV - "". Thanks.",IDC_STATIC,53,103,206,8,WS_DISABLED
 END
 
