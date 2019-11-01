@@ -22,6 +22,12 @@
 
 #define CANCELING_TEXT "Canceling..."
 
+#define ERROR_FIXING_TEXT "Error fixing in line %d."
+
+#define LENGTH_ERROR_FIXING_TEXT 150
+
+#define WM_USER_ERROR_FIXING WM_USER + 1
+
 //
 // fixDlgProc_DialogFunc
 //

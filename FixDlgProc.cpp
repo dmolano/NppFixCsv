@@ -62,21 +62,64 @@ HWND curScintilla;
 LRESULT sciLineCount;
 
 //
-// fixDlgProc_Fix
+// fixDlgProc_FixLine
 //
-DWORD WINAPI fixDlgProc_Fix(LPVOID lpParam) {
+int fixDlgProc_FixLine(HWND curScintilla, LRESULT lineIndex) {
+	IntegerSplitPtr integerSplitListIndex = integerSplitList;
+	int result = TRUE;
+
+	/*This returns the length of the line, including any line end characters.
+	If line is negative or beyond the last line in the document, the result is 0.
+	If you want the length of the line not including any end of line characters,
+	use SCI_GETLINEENDPOSITION(line) - SCI_POSITIONFROMLINE(line).*/
+	LRESULT lineLen = ::SendMessage(curScintilla, SCI_LINELENGTH, lineIndex, NOT_USED_LPARAM);
+	// TODO Remove.
+	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+	while (integerSplitListIndex != INTEGER_SPLITTER_NULL) {
+		// TODO Remove.
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d (%d,%c)"),
+			lineIndex + 1, lineLen, integerSplitListIndex->integer, integerSplitListIndex->separator);
+		// TODO Remove.
+		SendMessage(staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+		Sleep(1000);
+		integerSplitListIndex = integerSplitListIndex->next;
+	}
+	return result;
+}
+
+//
+// fixDlgProc_FixAllLines
+//
+DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
+	LRESULT lineIndex;
+	HWND curScintilla;
 	HWND hWndDlg;
+
 	hWndDlg = (HWND)lpParam;
-	LRESULT i;
-	for (i = 1; (semaphoreCancel == FALSE) && (i <= sciLineCount); i++) {
+	// Get the current scintilla
+	int which = -1;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, NOT_USED_WPARAM, (LPARAM)&which);
+	if (which == -1) {
+		return TRUE;
+	}
+	curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+	// We begin to fix each line of the document.
+	for (lineIndex = 0; (semaphoreCancel == FALSE) && (lineIndex < sciLineCount); lineIndex++) {
 		SendMessage(progressBarHandle, PBM_STEPIT, NOT_USED_WPARAM, NOT_USED_LPARAM);
-		Sleep(3000);
+		// First we fix, and if an error occurs, then we verify that we do not have a cancellation.
+		if ((fixDlgProc_FixLine(curScintilla, lineIndex) == FALSE) &&
+			(semaphoreCancel == FALSE)) {
+			// Progress bar in red.
+			SendMessage(progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_ERROR, NOT_USED_LPARAM);
+			// Requesting to display an error message in the dialog window with the line as information.
+			SendMessage(hWndDlg, WM_USER_ERROR_FIXING, NOT_USED_WPARAM, (LPARAM) lineIndex + 1);
+			break;
+		}
 	}
 	if (semaphoreCancel == TRUE) {
 		SendMessage(progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_PAUSED, NOT_USED_LPARAM);
-		Sleep(3000);
 	}
-	SendMessage(hWndDlg, WM_CLOSE, 0, 0);
+	SendMessage(hWndDlg, WM_CLOSE, NOT_USED_WPARAM, NOT_USED_LPARAM);
 	return semaphoreCancel;
 }
 
@@ -94,13 +137,13 @@ int fixDlgProc_DialogFunc_InitDialog(HWND hWndDlg) {
 		CloseHandle(fixThreadHandle);
 		fixThreadHandle = NULL;
 	}
-	fixThreadHandle = CreateThread(NULL, 0, fixDlgProc_Fix, hWndDlg, 0, NULL);
+	fixThreadHandle = CreateThread(NULL, 0, fixDlgProc_FixAllLines, hWndDlg, 0, NULL);
 	if (fixThreadHandle == NULL) {
 		return TRUE;
 	}
 	// Get the current scintilla
 	int which = -1;
-	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, NOT_USED_WPARAM, (LPARAM)&which);
 	if (which == -1) {
 		return TRUE;
 	}
@@ -135,6 +178,7 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 			EnableWindow(buttonCancelHandle, FALSE);
 			SendMessage(staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
 			return TRUE;
+			// break;
 		default:
 			break;
 		}
@@ -142,6 +186,13 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	case WM_CLOSE:
 		EndDialog(hWndDlg, 0);
 		return TRUE;
+		// break;
+	case WM_USER_ERROR_FIXING:
+		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), lParam);
+		::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+		return TRUE;
+		// break;
 	default:
 		break;
 	}
