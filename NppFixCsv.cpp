@@ -21,11 +21,6 @@
 #include "pch.h"
 
 //
-// fixThreadHandle
-//
-extern HANDLE fixThreadHandle;
-
-//
 // g_DllhInst
 //
 HINSTANCE g_DllhInst;
@@ -50,6 +45,11 @@ wchar_t* lengthsUnicodeDataStringSettings = NULL;
 //
 IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
 
+//
+// fixCsvData -> see FixDlgProc.h
+//
+FixCsvData fixCsvData;
+
 //----------------------------------------------//
 //-- STEP 4. DEFINE YOUR ASSOCIATED FUNCTIONS --//
 //----------------------------------------------//
@@ -58,7 +58,12 @@ IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
 //
 void nppFixCsv_FunctionFix()
 {
-	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), nppData._nppHandle, fixDlgProc_DialogFunc) == 1) {
+	if (fixCsvData.fixThreadHandle != NULL) {
+		CloseHandle(fixCsvData.fixThreadHandle);
+		fixCsvData.fixThreadHandle = NULL;
+	}
+	fixCsvData.integerSplitList = integerSplitList;
+	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), nppData._nppHandle, fixDlgProc_DialogFunc, (LPARAM)&fixCsvData) == 1) {
 	}
 }
 
@@ -133,16 +138,17 @@ void nppFixCsv_CommandMenuInit()
 //
 void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
 	g_DllhInst = (HINSTANCE)hModule;
+	memset(&fixCsvData, 0, sizeof(FixCsvData));
 }
 
 //
 // nppFixCsv_PluginDllProcessDetach
 //    
 void nppFixCsv_PluginDllProcessDetach() {
-	if (fixThreadHandle != NULL) {
-		CloseHandle(fixThreadHandle);
-		fixThreadHandle = NULL;
+	if (fixCsvData.fixThreadHandle != NULL) {
+		CloseHandle(fixCsvData.fixThreadHandle);
 	}
+	memset(&fixCsvData, 0, sizeof(FixCsvData));
 	if (lengthsUnicodeDataStringSettings != NULL) {
 		delete[] lengthsUnicodeDataStringSettings;
 		lengthsUnicodeDataStringSettings = NULL;

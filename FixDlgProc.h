@@ -20,13 +20,48 @@
 /***************************************************************************/
 #pragma once
 
+#define NO_ERROR_INIT 0
+
+#define NO_ERROR_FIXING 0
+
 #define CANCELING_TEXT "Canceling..."
 
-#define ERROR_FIXING_TEXT "Error fixing in line %d."
+#define ERROR_FIXING_TEXT "Error fixing in line %lld."
 
 #define LENGTH_ERROR_FIXING_TEXT 150
 
 #define WM_USER_ERROR_FIXING WM_USER + 1
+
+#define SEARCHING_SEPARATOR_STATUS 0
+
+#define REACHED_SEPARATOR_STATUS SEARCHING_SEPARATOR_STATUS + 1
+
+//
+// FixCsvData
+// 
+typedef struct FixCsvData { //name of the structure
+	// INTEGER SPLIT
+	IntegerSplitPtr integerSplitList;
+	// THREAD
+	HANDLE fixThreadHandle;
+	// SEMAPHORE CANCEL
+//	BOOL semaphoreCancel;
+	// DIALOG
+	HWND hWndDlg;
+	HWND progressBarHandle;
+	HWND staticActionHandle;
+	HWND buttonCancelHandle;
+	// SCINTILLA
+	HWND currentScintilla;
+	intptr_t sciLineCount;
+	intptr_t sciLineIndex;
+	intptr_t sciPositionIndex;
+}FixCsvDataType;// type of data to declare the structure
+
+//
+// FixCsvDataPtr
+//
+typedef FixCsvDataType* FixCsvDataPtr;
 
 //
 // fixDlgProc_DialogFunc

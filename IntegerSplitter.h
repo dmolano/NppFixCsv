@@ -40,6 +40,9 @@ typedef struct IntegerSplit { //name of the structure
 	struct IntegerSplit* next;
 }IntegerSplitType;// type of data to declare the structure
 
+//
+// IntegerSplitPtr
+//
 typedef IntegerSplitType* IntegerSplitPtr;
 
 //
