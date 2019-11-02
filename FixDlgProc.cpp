@@ -34,8 +34,17 @@ extern NppData nppData;
 //
 int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, IntegerSplitPtr integerSplitListIndex) {
 	// TODO Remove.
-	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-	Sleep(1000);
+	intptr_t sciCharAtIndex;
+	for (sciCharAtIndex = 0; sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex; sciCharAtIndex++) {
+		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+		int character = SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETCHARAT, (WPARAM)fixCsvDataPtr->sciPositionIndex + sciCharAtIndex, NOT_USED_LPARAM);
+		// TODO Remove.
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d (%d,%c) '%c'"),
+			fixCsvDataPtr->sciLineIndex + 1, fixCsvDataPtr->sciLineLengthCurrentIndex, integerSplitListIndex->integer, integerSplitListIndex->separator, character);
+		// TODO Remove.
+		SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+		Sleep(2000);
+	}
 	return REACHED_SEPARATOR_STATUS;
 }
 //
@@ -49,7 +58,9 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 	If line is negative or beyond the last line in the document, the result is 0.
 	If you want the length of the line not including any end of line characters,
 	use SCI_GETLINEENDPOSITION(line) - SCI_POSITIONFROMLINE(line).*/
-	LRESULT lineLen = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_LINELENGTH, fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciPositionIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciLineLengthCurrentIndex = fixCsvDataPtr->sciPositionIndex
+		 - ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
 	// TODO Remove.
 	//wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
 	int status = SEARCHING_SEPARATOR_STATUS;
@@ -75,8 +86,7 @@ DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 
 	fixCsvDataPtr = (FixCsvDataPtr)lpParam;
 	// We begin to fix each line of the document.
-	for (fixCsvDataPtr->sciLineIndex = 0,
-		fixCsvDataPtr->sciPositionIndex;
+	for (fixCsvDataPtr->sciLineIndex = 0, fixCsvDataPtr->sciPositionIndex = 0;
 		(IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle) == TRUE) && (fixCsvDataPtr->sciLineIndex < fixCsvDataPtr->sciLineCount);
 		fixCsvDataPtr->sciLineIndex++) {
 		// Next progress bar step.
@@ -123,7 +133,7 @@ int fixDlgProc_DialogFunc_InitDialog(FixCsvDataPtr fixCsvDataPtr) {
 	int which = -1;
 	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, NOT_USED_WPARAM, (LPARAM)&which);
 	if (which == -1) {
-		return TRUE;
+		return NO_CURRENT_SCINTILLA_ERROR_INIT_DIALOG;
 	}
 	fixCsvDataPtr->currentScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 	fixCsvDataPtr->sciLineCount = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINECOUNT, NOT_USED_WPARAM, NOT_USED_LPARAM);
@@ -132,52 +142,58 @@ int fixDlgProc_DialogFunc_InitDialog(FixCsvDataPtr fixCsvDataPtr) {
 	// Thread
 	fixCsvDataPtr->fixThreadHandle = CreateThread(NULL, 0, fixDlgProc_FixAllLines, fixCsvDataPtr, 0, NULL);
 	if (fixCsvDataPtr->fixThreadHandle == NULL) {
-		return TRUE;
+		return NO_FIX_THREAD_ERROR_INIT_DIALOG;
 	}
-	return NO_ERROR_INIT;
+	return NO_ERROR_INIT_DIALOG;
 }
 
 //
 // fixDlgProc_DialogFunc
 //
 INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	FixCsvDataPtr fixCsvDataPtr = NULL;
 	switch (uMsg) {
-		case WM_INITDIALOG:
-			if (lParam == NULL) {
-				EndDialog(hWndDlg, 0);
-				return TRUE;
-			}
-			fixCsvDataPtr = (FixCsvDataPtr)lParam;
-			if (fixCsvDataPtr->integerSplitList == NULL) {
-				EndDialog(hWndDlg, 0);
-				return TRUE;
-			}
-			fixCsvDataPtr->hWndDlg = hWndDlg;
-			if (fixDlgProc_DialogFunc_InitDialog(fixCsvDataPtr) != NO_ERROR_INIT) {
-				EndDialog(hWndDlg, 0);
-				return TRUE;
-			}
-			break;
-		case WM_COMMAND:
-			switch (LOWORD(wParam))
-			{
-			case IDCANCEL:
-				EnableWindow(GetDlgItem(hWndDlg, IDCANCEL), FALSE);
-				SendMessage(GetDlgItem(hWndDlg, IDC_STATIC_ACTION), WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
-				return TRUE;
-				// break;
-			default:
-				break;
-			}
-			break;
-		case WM_CLOSE:
-			EndDialog(hWndDlg, 0);
+	case WM_INITDIALOG: {
+		FixCsvDataPtr fixCsvDataPtr;
+		int errorInitDialog;
+		if (lParam == NULL) {
+			EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
+			return TRUE;
+		}
+		fixCsvDataPtr = (FixCsvDataPtr)lParam;
+		if (fixCsvDataPtr->integerSplitList == NULL) {
+			EndDialog(hWndDlg, NO_INTEGER_SPLIT_DATA_ERROR_INIT_DIALOG);
+			return TRUE;
+		}
+		// We take note of the dialog window handler.
+		fixCsvDataPtr->hWndDlg = hWndDlg;
+		errorInitDialog = fixDlgProc_DialogFunc_InitDialog(fixCsvDataPtr);
+		if (errorInitDialog != NO_ERROR_INIT_DIALOG) {
+			EndDialog(hWndDlg, errorInitDialog);
+			return TRUE;
+		}
+	}
+					  break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			// Someone pressed the cancel button of the fixing operation.
+			EnableWindow(GetDlgItem(hWndDlg, IDCANCEL), FALSE);
+			SendMessage(GetDlgItem(hWndDlg, IDC_STATIC_ACTION), WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
 			return TRUE;
 			// break;
-		case WM_USER_ERROR_FIXING:
+		default:
+			break;
+		}
+		break;
+	case WM_CLOSE:
+		EndDialog(hWndDlg, 0);
+		return TRUE;
+		// break;
+	case WM_USER_ERROR_FIXING: {
+			FixCsvDataPtr fixCsvDataPtr;
 			if (lParam == NULL) {
-				EndDialog(hWndDlg, 0);
+				EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
 				return TRUE;
 			}
 			fixCsvDataPtr = (FixCsvDataPtr)lParam;
@@ -185,7 +201,8 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 			swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciLineIndex + 1);
 			::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
 			return TRUE;
-			// break;
+		}
+		// break;
 		default:
 			break;
 		}

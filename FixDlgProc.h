@@ -20,18 +20,31 @@
 /***************************************************************************/
 #pragma once
 
-#define NO_ERROR_INIT 0
+// ERROR INIT DIALOG
+#define NO_ERROR_INIT_DIALOG 0
 
+#define NO_FIX_CSV_DATA_ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 1
+
+#define NO_INTEGER_SPLIT_DATA_ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 2
+
+#define NO_CURRENT_SCINTILLA_ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 3
+
+#define NO_FIX_THREAD_ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 4
+
+// ERROR FIXING
 #define NO_ERROR_FIXING 0
 
+// CANCELLING
 #define CANCELING_TEXT "Canceling..."
 
+// ERROR
 #define ERROR_FIXING_TEXT "Error fixing in line %lld."
 
 #define LENGTH_ERROR_FIXING_TEXT 150
 
 #define WM_USER_ERROR_FIXING WM_USER + 1
 
+// STATUS
 #define SEARCHING_SEPARATOR_STATUS 0
 
 #define REACHED_SEPARATOR_STATUS SEARCHING_SEPARATOR_STATUS + 1
@@ -44,8 +57,6 @@ typedef struct FixCsvData { //name of the structure
 	IntegerSplitPtr integerSplitList;
 	// THREAD
 	HANDLE fixThreadHandle;
-	// SEMAPHORE CANCEL
-//	BOOL semaphoreCancel;
 	// DIALOG
 	HWND hWndDlg;
 	HWND progressBarHandle;
@@ -55,6 +66,7 @@ typedef struct FixCsvData { //name of the structure
 	HWND currentScintilla;
 	intptr_t sciLineCount;
 	intptr_t sciLineIndex;
+	intptr_t sciLineLengthCurrentIndex;
 	intptr_t sciPositionIndex;
 }FixCsvDataType;// type of data to declare the structure
 
