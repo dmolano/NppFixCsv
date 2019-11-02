@@ -37,13 +37,21 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 	intptr_t sciCharAtIndex;
 	for (sciCharAtIndex = 0; sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex; sciCharAtIndex++) {
 		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-		int character = SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETCHARAT, (WPARAM)fixCsvDataPtr->sciPositionIndex + sciCharAtIndex, NOT_USED_LPARAM);
+		int character = SendMessage(fixCsvDataPtr->currentScintilla, 
+									SCI_GETCHARAT, 
+									(WPARAM)fixCsvDataPtr->sciPositionIndex + sciCharAtIndex, 
+									NOT_USED_LPARAM);
 		// TODO Remove.
-		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d (%d,%c) '%c'"),
-			fixCsvDataPtr->sciLineIndex + 1, fixCsvDataPtr->sciLineLengthCurrentIndex, integerSplitListIndex->integer, integerSplitListIndex->separator, character);
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d -%d- (%d,%c) %d '%c'"),
+			fixCsvDataPtr->sciLineIndex + 1, 
+			fixCsvDataPtr->sciLineLengthCurrentIndex, 
+			fixCsvDataPtr->sciPositionIndex,
+			integerSplitListIndex->integer, 
+			integerSplitListIndex->separator, 
+			character, character);
 		// TODO Remove.
 		SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
-		Sleep(2000);
+		Sleep(5000);
 	}
 	return REACHED_SEPARATOR_STATUS;
 }
@@ -58,9 +66,9 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 	If line is negative or beyond the last line in the document, the result is 0.
 	If you want the length of the line not including any end of line characters,
 	use SCI_GETLINEENDPOSITION(line) - SCI_POSITIONFROMLINE(line).*/
-	fixCsvDataPtr->sciPositionIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
-	fixCsvDataPtr->sciLineLengthCurrentIndex = fixCsvDataPtr->sciPositionIndex
-		 - ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciPositionIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciLineLengthCurrentIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM); 
+									- fixCsvDataPtr->sciPositionIndex;
 	// TODO Remove.
 	//wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
 	int status = SEARCHING_SEPARATOR_STATUS;
