@@ -33,11 +33,12 @@ extern NppData nppData;
 // fixDlgProc_FixLine_searchSeparator
 //
 int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, IntegerSplitPtr integerSplitListIndex) {
-	// TODO Remove.
-	intptr_t sciCharAtIndex;
-	for (sciCharAtIndex = 0; sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex; sciCharAtIndex++) {
+	intptr_t sciCharAtIndex = 0;
+	int character = NULL;
+	{
+		// TODO Remove.
 		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-		int character = SendMessage(fixCsvDataPtr->currentScintilla, 
+		character = SendMessage(fixCsvDataPtr->currentScintilla, 
 									SCI_GETCHARAT, 
 									(WPARAM)fixCsvDataPtr->sciPositionIndex + sciCharAtIndex, 
 									NOT_USED_LPARAM);
@@ -51,7 +52,38 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 			character, character);
 		// TODO Remove.
 		SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
-		Sleep(5000);
+		Sleep(3000);
+	} while ((character != integerSplitListIndex->separator) &&
+		(++sciCharAtIndex < integerSplitListIndex->integer) &&
+		(sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex));
+	// We analyze the reason why we leave the while loop.
+	if (sciCharAtIndex >= fixCsvDataPtr->sciLineLengthCurrentIndex) {
+		// We have exceeded the length of the line.
+		status = REACHED_ENDOFLINE_STATUS;
+	}
+	else {
+		if (character == integerSplitListIndex->separator) {
+			// ++sciCharAtIndex did not run.
+			// The true length will be obtained, adding one to sciCharAtIndex.
+			++sciCharAtIndex;
+			if (sciCharAtIndex == integerSplitListIndex->integer) {
+				status = REACHED_SEPARATOR_IN_LENGTH_STATUS;
+			}
+			else {
+				if (sciCharAtIndex < integerSplitListIndex->integer) {
+					status = REACHED_SEPARATOR_BEFORE_LENGTH_STATUS;
+				}
+				else {
+
+				}
+			}
+		}
+		else {
+			// ++sciCharAtIndex did run.
+			if () {
+
+			}
+		}
 	}
 	return REACHED_SEPARATOR_STATUS;
 }
