@@ -47,9 +47,13 @@
 // STATUS
 #define SEARCHING_SEPARATOR_STATUS 0
 
-#define REACHED_SEPARATOR_STATUS SEARCHING_SEPARATOR_STATUS + 1
+#define REACHED_ENDOFLINE_STATUS 0
 
-#define REACHED_ENDOFLINE_STATUS SEARCHING_SEPARATOR_STATUS + 2
+#define REACHED_SEPARATOR_IN_LENGTH_STATUS REACHED_ENDOFLINE_STATUS + 1
+
+#define REACHED_SEPARATOR_BEFORE_LENGTH_STATUS REACHED_ENDOFLINE_STATUS + 2
+
+#define REACHED_SEPARATOR_AFTER_LENGTH_STATUS REACHED_ENDOFLINE_STATUS + 3
 
 //
 // FixCsvData
@@ -68,8 +72,8 @@ typedef struct FixCsvData { //name of the structure
 	HWND currentScintilla;
 	intptr_t sciLineCount;
 	intptr_t sciLineIndex;
-	intptr_t sciLineLengthCurrentIndex;
-	intptr_t sciPositionIndex;
+	intptr_t sciLineLengthCurrentIndex; // Without the end of the line.
+	intptr_t sciStartPositionLineIndex;
 }FixCsvDataType;// type of data to declare the structure
 
 //
