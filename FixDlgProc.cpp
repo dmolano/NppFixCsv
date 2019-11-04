@@ -124,6 +124,7 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 			case REACHED_ENDOFLINE_STATUS:
 				break;
 			case REACHED_SEPARATOR_IN_LENGTH_STATUS:
+				// next
 				break;
 			case REACHED_SEPARATOR_BEFORE_LENGTH_STATUS:
 				break;
