@@ -40,7 +40,7 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 		return status;
 	}
 	// while loop starts.
-	{ 
+	do { 
 		character = SendMessage(fixCsvDataPtr->currentScintilla,
 			SCI_GETCHARAT,
 			(WPARAM)(*positionCharacterIndex) + sciCharAtIndex,
@@ -60,6 +60,17 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 		::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
 	} while ((character != integerSplitListIndex->separator) &&
 		(++sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex));
+	// TODO Remove.
+	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+	// TODO Remove.
+	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("while %c != %c && %d < %d"),
+		character,
+		integerSplitListIndex->separator,
+		sciCharAtIndex,
+		fixCsvDataPtr->sciLineLengthCurrentIndex);
+	// TODO Remove.
+	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+	::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
 	// We analyze the reason why we leave the while loop.
 	if (sciCharAtIndex >= fixCsvDataPtr->sciLineLengthCurrentIndex) {
 		/*
@@ -88,8 +99,6 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 		}
 	}
 	// TODO Remove.
-	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-	// TODO Remove.
 	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("Status=%d"),status);
 	// TODO Remove.
 	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
@@ -109,7 +118,7 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 	 * For this line, the following value never changes, even though we can add or insert more characters.
 	 */
 	fixCsvDataPtr->sciStartPositionLineIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
-	while (integerSplitListIndex != INTEGER_SPLITTER_NULL) {
+	while ((status < ERROR_REACHED_ENDOFLINE_STATUS) && (integerSplitListIndex != INTEGER_SPLITTER_NULL)) {
 		/*
 		 * After treating each split, we must recalculate the total length of the line.
 		 */
@@ -122,18 +131,25 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 		 */
 		switch (status) {
 			case REACHED_ENDOFLINE_STATUS:
+				if (integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
+					/*
+					 * We have reached the end of the line, but there are still splits to try.
+					 */
+					status = ERROR_REACHED_ENDOFLINE_STATUS;
+				}
 				break;
 			case REACHED_SEPARATOR_IN_LENGTH_STATUS:
-				// next
+				positionCharacterIndex++;
 				break;
 			case REACHED_SEPARATOR_BEFORE_LENGTH_STATUS:
+				positionCharacterIndex++;
 				break;
 			case REACHED_SEPARATOR_AFTER_LENGTH_STATUS:
+				positionCharacterIndex++;
 				break;
 		}
 		integerSplitListIndex = integerSplitListIndex->next;
 	}
-	result = 1;
 	return result;
 }
 
