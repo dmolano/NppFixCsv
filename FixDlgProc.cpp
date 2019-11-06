@@ -46,31 +46,31 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 			(WPARAM)(*positionCharacterIndex) + sciCharAtIndex,
 			NOT_USED_LPARAM);
 		// TODO Remove.
-		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+//		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
 		// TODO Remove.
-		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d StartPosition=%d Split=(%d,'%c') %d '%c'"),
-			fixCsvDataPtr->sciLineIndex + 1,
-			fixCsvDataPtr->sciLineLengthCurrentIndex,
-			fixCsvDataPtr->sciStartPositionLineIndex,
-			integerSplitListIndex->integer,
-			(integerSplitListIndex->separator==NULL? ' ' : integerSplitListIndex->separator),
-			character, (character==NULL? ' ': character));
+//		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("DEBUG-Len(%d)=%d StartPosition=%d Split=(%d,'%c') %d '%c'"),
+//			fixCsvDataPtr->sciLineIndex + 1,
+//			fixCsvDataPtr->sciLineLengthCurrentIndex,
+//			fixCsvDataPtr->sciStartPositionLineIndex,
+//			integerSplitListIndex->integer,
+//			(integerSplitListIndex->separator==NULL? ' ' : integerSplitListIndex->separator),
+//			character, (character==NULL? ' ': character));
 		// TODO Remove.
-		SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
-		::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
+//		SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+//		::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
 	} while ((character != integerSplitListIndex->separator) &&
 		(++sciCharAtIndex < fixCsvDataPtr->sciLineLengthCurrentIndex));
 	// TODO Remove.
-	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+//	wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
 	// TODO Remove.
-	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("while %c != %c && %d < %d"),
-		character,
-		integerSplitListIndex->separator,
-		sciCharAtIndex,
-		fixCsvDataPtr->sciLineLengthCurrentIndex);
+//	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("while %c != %c && %d < %d"),
+//		character,
+//		integerSplitListIndex->separator,
+//		sciCharAtIndex,
+//		fixCsvDataPtr->sciLineLengthCurrentIndex);
 	// TODO Remove.
-	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
-	::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
+//	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+//	::MessageBox(fixCsvDataPtr->hWndDlg, TEXT("Push"), NPP_PLUGIN_NAME, MB_ICONINFORMATION | MB_OK);
 	// We analyze the reason why we leave the while loop.
 	if (sciCharAtIndex >= fixCsvDataPtr->sciLineLengthCurrentIndex) {
 		/*
@@ -99,10 +99,10 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 		}
 	}
 	// TODO Remove.
-	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("Status=%d"),status);
+//	swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT("Status=%d"),status);
 	// TODO Remove.
-	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
-	Sleep(3000);
+//	SendMessage(fixCsvDataPtr->staticActionHandle, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+//	Sleep(3000);
 	return status;
 }
 
@@ -124,8 +124,7 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 		 */
 		fixCsvDataPtr->sciLineLengthCurrentIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM)
 			- fixCsvDataPtr->sciStartPositionLineIndex;
-		status = SEARCHING_SEPARATOR_STATUS;
-		status = fixDlgProc_FixLine_searchSeparator(status, fixCsvDataPtr, integerSplitListIndex, &positionCharacterIndex);
+		status = fixDlgProc_FixLine_searchSeparator(SEARCHING_SEPARATOR_STATUS, fixCsvDataPtr, integerSplitListIndex, &positionCharacterIndex);
 		/*
 		 * We analyze the returned status, to decide what action to take.
 		 */
@@ -282,5 +281,3 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	}
 	return FALSE;
 }
-
-
