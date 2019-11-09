@@ -65,8 +65,11 @@
 // FixCsvData
 // 
 typedef struct FixCsvData { //name of the structure
+	// Fixing
+	int fixingStatus;
 	// INTEGER SPLIT
 	IntegerSplitPtr integerSplitList;
+	IntegerSplitPtr integerSplitListIndex;
 	// THREAD
 	HANDLE fixThreadHandle;
 	// DIALOG
@@ -76,10 +79,11 @@ typedef struct FixCsvData { //name of the structure
 	HWND buttonCancelHandle;
 	// SCINTILLA
 	HWND currentScintilla;
-	intptr_t sciLineCount;
-	intptr_t sciLineIndex;
-	intptr_t sciLineLengthCurrentIndex; // Without the end of the line.
-	intptr_t sciStartPositionLineIndex;
+	intptr_t sciDocumentLinesCount;
+	intptr_t sciDocumentCurrentLineIndex;
+	intptr_t sciDocumentCurrentLineLength; // Without the end of the line.
+	intptr_t sciDocumentCurrentLinePositionStart;
+	intptr_t sciDocumentCurrentLineCharacterPositionIndex;
 }FixCsvDataType;// type of data to declare the structure
 
 //

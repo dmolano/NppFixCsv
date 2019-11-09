@@ -32,8 +32,8 @@ extern NppData nppData;
 //
 // fixDlgProc_FixLine_searchSeparator
 //
-int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, IntegerSplitPtr integerSplitListIndex, intptr_t *positionCharacterIndex) {
-	intptr_t sciCharAtIndex = 0;
+int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr) {
+	intptr_t sciDocumentLineCharacterIndex = 0;
 	int character = NULL;
 	// Just in case.
 	if (status != SEARCHING_SEPARATOR_STATUS) {
@@ -41,38 +41,41 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 	}
 	// while loop starts.
 	bool exit = FALSE;
-	do { 
+	do {
 		character = SendMessage(fixCsvDataPtr->currentScintilla,
 			SCI_GETCHARAT,
-			(WPARAM)(*positionCharacterIndex) + sciCharAtIndex,
+			(WPARAM)(fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex + sciDocumentLineCharacterIndex),
 			NOT_USED_LPARAM);
 		/*
 		 * Reasons for going out the loop:
 		 *    1.- The character read matches the split's separator.
-		 *    2.- ((*positionCharacterIndex) + ++sciCharAtIndex - fixCsvDataPtr->sciStartPositionLineIndex) matches with line's length.
+		 *    2.- (sciDocumentCurrentLineCharacterPositionIndex + ++sciDocumentLineCharacterIndex - sciDocumentCurrentLinePositionStart) matches with line's length.
 		 */
-		if (character == integerSplitListIndex->separator) {
+		if (character == fixCsvDataPtr->integerSplitListIndex->separator) {
 			exit = TRUE;
 		}
 		else {
-			++sciCharAtIndex;
-			intptr_t splitCurrentLength = (*positionCharacterIndex) + sciCharAtIndex - fixCsvDataPtr->sciStartPositionLineIndex;
-			if (splitCurrentLength >= fixCsvDataPtr->sciLineLengthCurrentIndex) {
+			// Increasing the variable, we obtain the length traveled so far.
+			++sciDocumentLineCharacterIndex;
+			intptr_t splitCurrentLength = fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex
+				+ sciDocumentLineCharacterIndex
+				- fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
+			if (splitCurrentLength >= fixCsvDataPtr->sciDocumentCurrentLineLength) {
 				exit = TRUE;
 			}
 		}
 	} while (exit == FALSE);
 	// We analyze the reason why we leave the while loop.
-	if (character == integerSplitListIndex->separator) {
+	if (character == fixCsvDataPtr->integerSplitListIndex->separator) {
 		/*
 		 * The following condition of the while loop was not executed, and therefore, sciCharAtIndex was not increased.
 		 */
-		*positionCharacterIndex += sciCharAtIndex;
-		if (sciCharAtIndex == integerSplitListIndex->integer) {
+		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += sciDocumentLineCharacterIndex;
+		if (sciDocumentLineCharacterIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
 			status = REACHED_SEPARATOR_IN_LENGTH_STATUS;
 		}
 		else {
-			if (sciCharAtIndex < integerSplitListIndex->integer) {
+			if (sciDocumentLineCharacterIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
 				status = REACHED_SEPARATOR_BEFORE_LENGTH_STATUS;
 			}
 			else {
@@ -82,15 +85,15 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 	}
 	else {
 		/*
-		 * If we have not abandoned the while loop for the first condition, then we have done it for the second one, 
+		 * If we have not abandoned the while loop for the first condition, then we have done it for the second one,
 		 *and in this case, I have exceeded the line character limit, without finding the desired separator.
 		 */
-		*positionCharacterIndex += sciCharAtIndex;
-		if (sciCharAtIndex == integerSplitListIndex->integer) {
+		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += sciDocumentLineCharacterIndex;
+		if (sciDocumentLineCharacterIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
 			status = REACHED_ENDOFLINE_IN_LENGTH_STATUS;
 		}
 		else {
-			if (sciCharAtIndex < integerSplitListIndex->integer) {
+			if (sciDocumentLineCharacterIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
 				status = REACHED_ENDOFLINE_BEFORE_LENGTH_STATUS;
 			}
 			else {
@@ -105,77 +108,77 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 // fixDlgProc_FixLine
 //
 int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
-	IntegerSplitPtr integerSplitListIndex = fixCsvDataPtr->integerSplitList;
-	int status = SEARCHING_SEPARATOR_STATUS;
-	intptr_t positionCharacterIndex = 0;
+	int fixingStatus = SEARCHING_SEPARATOR_STATUS;
+
+	fixCsvDataPtr->integerSplitListIndex = fixCsvDataPtr->integerSplitList;
 	/*
 	 * For this line, the following value never changes, even though we can add or insert more characters.
 	 */
-	fixCsvDataPtr->sciStartPositionLineIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM);
-	positionCharacterIndex = fixCsvDataPtr->sciStartPositionLineIndex;
-	while ((status < ERROR_REACHED_ENDOFLINE_STATUS) && (integerSplitListIndex != INTEGER_SPLITTER_NULL)) {
+	fixCsvDataPtr->sciDocumentCurrentLinePositionStart = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_POSITIONFROMLINE, (WPARAM)fixCsvDataPtr->sciDocumentCurrentLineIndex, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex = fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
+	while ((fixingStatus < ERROR_REACHED_ENDOFLINE_STATUS) && (fixCsvDataPtr->integerSplitListIndex != INTEGER_SPLITTER_NULL)) {
 		/*
 		 * After treating each split, we must recalculate the total length of the line.
 		 */
-		fixCsvDataPtr->sciLineLengthCurrentIndex = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciLineIndex, NOT_USED_LPARAM)
-			- fixCsvDataPtr->sciStartPositionLineIndex;
-		status = fixDlgProc_FixLine_searchSeparator(SEARCHING_SEPARATOR_STATUS, fixCsvDataPtr, integerSplitListIndex, &positionCharacterIndex);
+		fixCsvDataPtr->sciDocumentCurrentLineLength = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINEENDPOSITION, (WPARAM)fixCsvDataPtr->sciDocumentCurrentLineIndex, NOT_USED_LPARAM)
+			- fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
+		fixingStatus = fixDlgProc_FixLine_searchSeparator(SEARCHING_SEPARATOR_STATUS, fixCsvDataPtr);
 		/*
 		 * We analyze the returned status, to decide what action to take.
 		 */
-		switch (status) {
-			case REACHED_ENDOFLINE_IN_LENGTH_STATUS:
-				if (integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
-					/*
-					 * We have reached the end of the line, but there are still splits to try.
-					 */
-					status = ERROR_REACHED_ENDOFLINE_STATUS;
-				}
-				else {
-					/*
-					 * We have reached the end of the line and splits too.
-					 */
-				}
-				break;
-			case REACHED_ENDOFLINE_BEFORE_LENGTH_STATUS:
-				if (integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
-					/*
-					 * We have reached the end of the line, but there are still splits to try.
-					 */
-					status = ERROR_REACHED_ENDOFLINE_STATUS;
-				}
-				else {
-					/*
-					 * We have reached the end of the line and splits too.
-					 */
-				}
-				break;
-			case REACHED_ENDOFLINE_AFTER_LENGTH_STATUS:
-				if (integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
-					/*
-					 * We have reached the end of the line, but there are still splits to try.
-					 */
-					status = ERROR_REACHED_ENDOFLINE_STATUS;
-				}
-				else {
-					/*
-					 * We have reached the end of the line and splits too.
-					 */
-				}
-				break;
-			case REACHED_SEPARATOR_IN_LENGTH_STATUS:
-				positionCharacterIndex++;
-				break;
-			case REACHED_SEPARATOR_BEFORE_LENGTH_STATUS:
-				positionCharacterIndex++;
-				break;
-			case REACHED_SEPARATOR_AFTER_LENGTH_STATUS:
-				positionCharacterIndex++;
-				break;
+		switch (fixingStatus) {
+		case REACHED_ENDOFLINE_IN_LENGTH_STATUS:
+			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
+				/*
+				 * We have reached the end of the line, but there are still splits to try.
+				 */
+				fixingStatus = ERROR_REACHED_ENDOFLINE_STATUS;
+			}
+			else {
+				/*
+				 * We have reached the end of the line and splits too.
+				 */
+			}
+			break;
+		case REACHED_ENDOFLINE_BEFORE_LENGTH_STATUS:
+			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
+				/*
+				 * We have reached the end of the line, but there are still splits to try.
+				 */
+				fixingStatus = ERROR_REACHED_ENDOFLINE_STATUS;
+			}
+			else {
+				/*
+				 * We have reached the end of the line and splits too.
+				 */
+			}
+			break;
+		case REACHED_ENDOFLINE_AFTER_LENGTH_STATUS:
+			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
+				/*
+				 * We have reached the end of the line, but there are still splits to try.
+				 */
+				fixingStatus = ERROR_REACHED_ENDOFLINE_STATUS;
+			}
+			else {
+				/*
+				 * We have reached the end of the line and splits too.
+				 */
+			}
+			break;
+		case REACHED_SEPARATOR_IN_LENGTH_STATUS:
+			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			break;
+		case REACHED_SEPARATOR_BEFORE_LENGTH_STATUS:
+			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			break;
+		case REACHED_SEPARATOR_AFTER_LENGTH_STATUS:
+			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			break;
 		}
-		integerSplitListIndex = integerSplitListIndex->next;
+		fixCsvDataPtr->integerSplitListIndex = fixCsvDataPtr->integerSplitListIndex->next;
 	}
-	return status;
+	return fixingStatus;
 }
 
 //
@@ -183,28 +186,29 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 //
 DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 	FixCsvDataPtr fixCsvDataPtr;
-	int status = SEARCHING_SEPARATOR_STATUS;
+	int fixingStatus = SEARCHING_SEPARATOR_STATUS;
 	bool cancelFix = FALSE;
 
 	fixCsvDataPtr = (FixCsvDataPtr)lpParam;
 	// We begin to fix each line of the document.
 	// We check that after fixing a line, they have not pressed the cancel button: button cancel is enabled.
-	for (fixCsvDataPtr->sciLineIndex = 0, fixCsvDataPtr->sciStartPositionLineIndex = 0;
-		(status < ERROR_REACHED_ENDOFLINE_STATUS) && 
-			(cancelFix == FALSE) &&
-			(fixCsvDataPtr->sciLineIndex < fixCsvDataPtr->sciLineCount);
-		fixCsvDataPtr->sciLineIndex++) {
+	for (fixCsvDataPtr->sciDocumentCurrentLineIndex = 0, fixCsvDataPtr->sciDocumentCurrentLinePositionStart = 0;
+		(fixingStatus < ERROR_REACHED_ENDOFLINE_STATUS) &&
+		(cancelFix == FALSE) &&
+		(fixCsvDataPtr->sciDocumentCurrentLineIndex < fixCsvDataPtr->sciDocumentLinesCount);
+		fixCsvDataPtr->sciDocumentCurrentLineIndex++) {
 		// Next progress bar step.
 		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_STEPIT, NOT_USED_WPARAM, NOT_USED_LPARAM);
 		// First we fix.
-		status = fixDlgProc_FixLine(fixCsvDataPtr);
+		fixingStatus = fixDlgProc_FixLine(fixCsvDataPtr);
 		// Then, we verify that we do not have a cancellation.
 		cancelFix = !IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle);
 	}
-	if (status >= ERROR_REACHED_ENDOFLINE_STATUS) {
+	if (fixingStatus >= ERROR_REACHED_ENDOFLINE_STATUS) {
 		// Progress bar in red.
 		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_ERROR, NOT_USED_LPARAM);
 		// Requesting to display an error message in the dialog window with the line as information.
+		fixCsvDataPtr->fixingStatus = fixingStatus;
 		SendMessage(fixCsvDataPtr->hWndDlg, WM_USER_ERROR_FIXING, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr);
 	}
 	else {
@@ -223,7 +227,7 @@ DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 //
 HWND fixDlgProc_DialogFunc_InitProgressBar(FixCsvDataPtr fixCsvDataPtr) {
 	HWND progressBarHandle = GetDlgItem(fixCsvDataPtr->hWndDlg, IDC_PROGRESSBAR_FIXING);
-	SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETRANGE32, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr->sciLineCount);
+	SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETRANGE32, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr->sciDocumentLinesCount);
 	SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_NORMAL, NOT_USED_LPARAM);
 	SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTEP, (WPARAM)1, NOT_USED_LPARAM);
 	return progressBarHandle;
@@ -243,7 +247,7 @@ int fixDlgProc_DialogFunc_InitDialog(FixCsvDataPtr fixCsvDataPtr) {
 		return NO_CURRENT_SCINTILLA_ERROR_INIT_DIALOG;
 	}
 	fixCsvDataPtr->currentScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
-	fixCsvDataPtr->sciLineCount = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINECOUNT, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	fixCsvDataPtr->sciDocumentLinesCount = ::SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETLINECOUNT, NOT_USED_WPARAM, NOT_USED_LPARAM);
 	// Progress Bar
 	fixCsvDataPtr->progressBarHandle = fixDlgProc_DialogFunc_InitProgressBar(fixCsvDataPtr);
 	// Thread
@@ -260,36 +264,36 @@ int fixDlgProc_DialogFunc_InitDialog(FixCsvDataPtr fixCsvDataPtr) {
 INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
-			FixCsvDataPtr fixCsvDataPtr;
-			int errorInitDialog;
-			if (lParam == NULL) {
-				EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
-				return TRUE;
-			}
-			fixCsvDataPtr = (FixCsvDataPtr)lParam;
-			if (fixCsvDataPtr->integerSplitList == NULL) {
-				EndDialog(hWndDlg, NO_INTEGER_SPLIT_DATA_ERROR_INIT_DIALOG);
-				return TRUE;
-			}
-			// We take note of the dialog window handler.
-			fixCsvDataPtr->hWndDlg = hWndDlg;
-			errorInitDialog = fixDlgProc_DialogFunc_InitDialog(fixCsvDataPtr);
-			if (errorInitDialog != NO_ERROR_INIT_DIALOG) {
-				EndDialog(hWndDlg, errorInitDialog);
-				return TRUE;
-			}
+		FixCsvDataPtr fixCsvDataPtr;
+		int errorInitDialog;
+		if (lParam == NULL) {
+			EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
+			return TRUE;
 		}
-		break;
+		fixCsvDataPtr = (FixCsvDataPtr)lParam;
+		if (fixCsvDataPtr->integerSplitList == NULL) {
+			EndDialog(hWndDlg, NO_INTEGER_SPLIT_DATA_ERROR_INIT_DIALOG);
+			return TRUE;
+		}
+		// We take note of the dialog window handler.
+		fixCsvDataPtr->hWndDlg = hWndDlg;
+		errorInitDialog = fixDlgProc_DialogFunc_InitDialog(fixCsvDataPtr);
+		if (errorInitDialog != NO_ERROR_INIT_DIALOG) {
+			EndDialog(hWndDlg, errorInitDialog);
+			return TRUE;
+		}
+	}
+					  break;
 	case WM_COMMAND:
-		switch (LOWORD(wParam))	{
-			case IDCANCEL:
-				// Someone pressed the cancel button of the fixing operation.
-				EnableWindow(GetDlgItem(hWndDlg, IDCANCEL), FALSE);
-				SendMessage(GetDlgItem(hWndDlg, IDC_STATIC_ACTION), WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
-				return TRUE;
-				// break;
-			default:
-				break;
+		switch (LOWORD(wParam)) {
+		case IDCANCEL:
+			// Someone pressed the cancel button of the fixing operation.
+			EnableWindow(GetDlgItem(hWndDlg, IDCANCEL), FALSE);
+			SendMessage(GetDlgItem(hWndDlg, IDC_STATIC_ACTION), WM_SETTEXT, NOT_USED_WPARAM, LPARAM(TEXT(CANCELING_TEXT)));
+			return TRUE;
+			// break;
+		default:
+			break;
 		}
 		break;
 	case WM_CLOSE:
@@ -297,18 +301,18 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 		return TRUE;
 		// break;
 	case WM_USER_ERROR_FIXING: {
-			FixCsvDataPtr fixCsvDataPtr;
-			if (lParam == NULL) {
-				EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
-				return TRUE;
-			}
-			fixCsvDataPtr = (FixCsvDataPtr)lParam;
-			wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-			swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciLineIndex + 1);
-			::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+		FixCsvDataPtr fixCsvDataPtr;
+		if (lParam == NULL) {
+			EndDialog(hWndDlg, NO_FIX_CSV_DATA_ERROR_INIT_DIALOG);
 			return TRUE;
 		}
-		// break;
+		fixCsvDataPtr = (FixCsvDataPtr)lParam;
+		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciDocumentCurrentLineIndex + 1);
+		::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+		return TRUE;
+	}
+							 // break;
 	default:
 		break;
 	}
