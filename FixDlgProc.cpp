@@ -107,7 +107,6 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr, 
 int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 	IntegerSplitPtr integerSplitListIndex = fixCsvDataPtr->integerSplitList;
 	int status = SEARCHING_SEPARATOR_STATUS;
-	int result = NO_ERROR_FIXING;
 	intptr_t positionCharacterIndex = 0;
 	/*
 	 * For this line, the following value never changes, even though we can add or insert more characters.
@@ -176,7 +175,7 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 		}
 		integerSplitListIndex = integerSplitListIndex->next;
 	}
-	return result;
+	return status;
 }
 
 //
@@ -184,32 +183,39 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 //
 DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 	FixCsvDataPtr fixCsvDataPtr;
+	int status = SEARCHING_SEPARATOR_STATUS;
+	bool cancelFix = FALSE;
 
 	fixCsvDataPtr = (FixCsvDataPtr)lpParam;
 	// We begin to fix each line of the document.
+	// We check that after fixing a line, they have not pressed the cancel button: button cancel is enabled.
 	for (fixCsvDataPtr->sciLineIndex = 0, fixCsvDataPtr->sciStartPositionLineIndex = 0;
-		(IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle) == TRUE) && (fixCsvDataPtr->sciLineIndex < fixCsvDataPtr->sciLineCount);
+		(status < ERROR_REACHED_ENDOFLINE_STATUS) && 
+			(cancelFix == FALSE) &&
+			(fixCsvDataPtr->sciLineIndex < fixCsvDataPtr->sciLineCount);
 		fixCsvDataPtr->sciLineIndex++) {
 		// Next progress bar step.
 		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_STEPIT, NOT_USED_WPARAM, NOT_USED_LPARAM);
-		// First we fix, and if an error occurs, then we verify that we do not have a cancellation.
-		if ((fixDlgProc_FixLine(fixCsvDataPtr) != NO_ERROR_FIXING) &&
-			// We check that after fixing a line, they have not pressed the cancel button: button cancel is enabled.
-			(IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle) == TRUE)) {
-			// Progress bar in red.
-			SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_ERROR, NOT_USED_LPARAM);
-			// Requesting to display an error message in the dialog window with the line as information.
-			SendMessage(fixCsvDataPtr->hWndDlg, WM_USER_ERROR_FIXING, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr);
-			break;
-		}
+		// First we fix.
+		status = fixDlgProc_FixLine(fixCsvDataPtr);
+		// Then, we verify that we do not have a cancellation.
+		cancelFix = !IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle);
 	}
-	// Did anyone press the cancel button of the fixing operation?
-	if (IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle) == FALSE) {
-		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_PAUSED, NOT_USED_LPARAM);
+	if (status >= ERROR_REACHED_ENDOFLINE_STATUS) {
+		// Progress bar in red.
+		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_ERROR, NOT_USED_LPARAM);
+		// Requesting to display an error message in the dialog window with the line as information.
+		SendMessage(fixCsvDataPtr->hWndDlg, WM_USER_ERROR_FIXING, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr);
+	}
+	else {
+		// Did anyone press the cancel button of the fixing operation?
+		if (cancelFix == TRUE) {
+			SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_PAUSED, NOT_USED_LPARAM);
+		}
 	}
 	// Whatever happens, we give the order to close the dialog window.
 	SendMessage(fixCsvDataPtr->hWndDlg, WM_CLOSE, NOT_USED_WPARAM, NOT_USED_LPARAM);
-	return IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle);
+	return cancelFix;
 }
 
 //
