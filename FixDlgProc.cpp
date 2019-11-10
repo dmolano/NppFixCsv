@@ -30,56 +30,89 @@ extern IntegerSplitPtr integerSplitList;
 extern NppData nppData;
 
 //
+// fixDlgProc_FixLine_reduceAnyCharacter
+//
+int fixDlgProc_FixLine_reduceLine(int status, FixCsvDataPtr fixCsvDataPtr, intptr_t difference) {
+	return status;
+}
+
+//
+// fixDlgProc_FixLine_fillLine
+//
+int fixDlgProc_FixLine_fillLine(int status, FixCsvDataPtr fixCsvDataPtr, intptr_t difference) {
+	char* filler = new char[difference + 1];
+	memset(filler, ' ', difference);
+	filler[difference] = 0;
+	SendMessage(fixCsvDataPtr->currentScintilla,
+		SCI_INSERTTEXT,
+		(WPARAM)fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex - 1,
+		(LPARAM)filler);
+	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += difference;
+	return status;
+}
+
+//
 // fixDlgProc_FixLine_searchSeparator
 //
 int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr) {
-	intptr_t sciDocumentLineCharacterIndex = 0;
 	int character = NULL;
+
+	fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex = 0;
 	// Just in case.
 	if (status != SEARCHING_SEPARATOR_STATUS) {
 		return status;
 	}
-	// while loop starts.
-	bool exit = FALSE;
-	do {
-		character = SendMessage(fixCsvDataPtr->currentScintilla,
-			SCI_GETCHARAT,
-			(WPARAM)(fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex + sciDocumentLineCharacterIndex),
-			NOT_USED_LPARAM);
-		/*
-		 * Reasons for going out the loop:
-		 *    1.- The character read matches the split's separator.
-		 *    2.- (sciDocumentCurrentLineCharacterPositionIndex + ++sciDocumentLineCharacterIndex - sciDocumentCurrentLinePositionStart) matches with line's length.
-		 */
-		if (character == fixCsvDataPtr->integerSplitListIndex->separator) {
-			exit = TRUE;
-		}
-		else {
-			// Increasing the variable, we obtain the length traveled so far.
-			++sciDocumentLineCharacterIndex;
-			intptr_t splitCurrentLength = fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex
-				+ sciDocumentLineCharacterIndex
-				- fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
-			if (splitCurrentLength >= fixCsvDataPtr->sciDocumentCurrentLineLength) {
+	intptr_t splitCurrentLength = fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex
+		- fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
+	if (splitCurrentLength < fixCsvDataPtr->sciDocumentCurrentLineLength) {
+		// while loop starts.
+		bool exit = FALSE;
+		do {
+			character = SendMessage(fixCsvDataPtr->currentScintilla,
+				SCI_GETCHARAT,
+				(WPARAM)(fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex + fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex),
+				NOT_USED_LPARAM);
+			/*
+			 * Reasons for going out the loop:
+			 *    1.- The character read matches the split's separator.
+			 *    2.- (sciDocumentCurrentLineCharacterPositionIndex + (++sciDocumentLineCharacterIndex) - sciDocumentCurrentLinePositionStart) matches with line's length.
+			 */
+			if (character == fixCsvDataPtr->integerSplitListIndex->separator) {
 				exit = TRUE;
 			}
-		}
-	} while (exit == FALSE);
+			else {
+				// Increasing the variable, we obtain the length traveled so far.
+				++(fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex);
+				// We calculate the total length traveled within the line.
+				intptr_t splitCurrentLength = fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex
+					+ fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex
+					- fixCsvDataPtr->sciDocumentCurrentLinePositionStart;
+				if (splitCurrentLength >= fixCsvDataPtr->sciDocumentCurrentLineLength) {
+					// We have reached the end of the total length of the line we are traveling.
+					exit = TRUE;
+				}
+			}
+		} while (exit == FALSE);
+	}
+	else {
+		// We must avoid entering into "if (character == fixCsvDataPtr->integerSplitListIndex->separator) {"
+		character = fixCsvDataPtr->integerSplitListIndex->separator + 1;
+	}
 	// We analyze the reason why we leave the while loop.
 	if (character == fixCsvDataPtr->integerSplitListIndex->separator) {
 		/*
 		 * The following condition of the while loop was not executed, and therefore, sciCharAtIndex was not increased.
 		 */
-		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += sciDocumentLineCharacterIndex;
-		if (sciDocumentLineCharacterIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
-			status = REACHED_SEPARATOR_IN_LENGTH_STATUS;
+		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex;
+		if (fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
+			status = REACHED_SEPARATOR_IN_LENGTH_SPLIT_STATUS;
 		}
 		else {
-			if (sciDocumentLineCharacterIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
-				status = REACHED_SEPARATOR_BEFORE_LENGTH_STATUS;
+			if (fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
+				status = REACHED_SEPARATOR_BEFORE_LENGTH_SPLIT_STATUS;
 			}
 			else {
-				status = REACHED_SEPARATOR_AFTER_LENGTH_STATUS;
+				status = REACHED_SEPARATOR_AFTER_LENGTH_SPLIT_STATUS;
 			}
 		}
 	}
@@ -88,16 +121,16 @@ int fixDlgProc_FixLine_searchSeparator(int status, FixCsvDataPtr fixCsvDataPtr) 
 		 * If we have not abandoned the while loop for the first condition, then we have done it for the second one,
 		 *and in this case, I have exceeded the line character limit, without finding the desired separator.
 		 */
-		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += sciDocumentLineCharacterIndex;
-		if (sciDocumentLineCharacterIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
-			status = REACHED_ENDOFLINE_IN_LENGTH_STATUS;
+		fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex;
+		if (fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex == fixCsvDataPtr->integerSplitListIndex->integer) {
+			status = REACHED_ENDOFLINE_IN_LENGTH_SPLIT_STATUS;
 		}
 		else {
-			if (sciDocumentLineCharacterIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
-				status = REACHED_ENDOFLINE_BEFORE_LENGTH_STATUS;
+			if (fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex < fixCsvDataPtr->integerSplitListIndex->integer) {
+				status = REACHED_ENDOFLINE_BEFORE_LENGTH_SPLIT_STATUS;
 			}
 			else {
-				status = REACHED_ENDOFLINE_AFTER_LENGTH_STATUS;
+				status = REACHED_ENDOFLINE_AFTER_LENGTH_SPLIT_STATUS;
 			}
 		}
 	}
@@ -127,7 +160,23 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 		 * We analyze the returned status, to decide what action to take.
 		 */
 		switch (fixingStatus) {
-		case REACHED_ENDOFLINE_IN_LENGTH_STATUS:
+		case REACHED_ENDOFLINE_IN_LENGTH_SPLIT_STATUS:
+			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
+				/*
+				 * We have reached the end of the line, but there are still splits to try.
+				 */
+				fixingStatus = ERROR_REACHED_ENDOFLINE_STATUS;
+			}
+			else {
+				/*
+				 * We have reached the end of the line and splits too.
+				 */
+				 /*
+				  * Next line.
+				  */
+			}
+			break;
+		case REACHED_ENDOFLINE_BEFORE_LENGTH_SPLIT_STATUS:
 			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
 				/*
 				 * We have reached the end of the line, but there are still splits to try.
@@ -140,7 +189,7 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 				 */
 			}
 			break;
-		case REACHED_ENDOFLINE_BEFORE_LENGTH_STATUS:
+		case REACHED_ENDOFLINE_AFTER_LENGTH_SPLIT_STATUS:
 			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
 				/*
 				 * We have reached the end of the line, but there are still splits to try.
@@ -153,27 +202,19 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 				 */
 			}
 			break;
-		case REACHED_ENDOFLINE_AFTER_LENGTH_STATUS:
-			if (fixCsvDataPtr->integerSplitListIndex->next != INTEGER_SPLITTER_NULL) {
-				/*
-				 * We have reached the end of the line, but there are still splits to try.
-				 */
-				fixingStatus = ERROR_REACHED_ENDOFLINE_STATUS;
-			}
-			else {
-				/*
-				 * We have reached the end of the line and splits too.
-				 */
-			}
-			break;
-		case REACHED_SEPARATOR_IN_LENGTH_STATUS:
+		case REACHED_SEPARATOR_IN_LENGTH_SPLIT_STATUS:
 			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			/*
+			 * Next split.
+			 */
 			break;
-		case REACHED_SEPARATOR_BEFORE_LENGTH_STATUS:
+		case REACHED_SEPARATOR_BEFORE_LENGTH_SPLIT_STATUS:
 			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			fixingStatus = fixDlgProc_FixLine_fillLine(FILLING_LINE_WITH_SPACE_STATUS, fixCsvDataPtr, fixCsvDataPtr->integerSplitListIndex->integer - fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex);
 			break;
-		case REACHED_SEPARATOR_AFTER_LENGTH_STATUS:
+		case REACHED_SEPARATOR_AFTER_LENGTH_SPLIT_STATUS:
 			fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+			fixingStatus = fixDlgProc_FixLine_reduceLine(REDUCING_LINE_STATUS, fixCsvDataPtr, fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex - fixCsvDataPtr->integerSplitListIndex->integer);
 			break;
 		}
 		fixCsvDataPtr->integerSplitListIndex = fixCsvDataPtr->integerSplitListIndex->next;
@@ -308,7 +349,7 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 		}
 		fixCsvDataPtr = (FixCsvDataPtr)lParam;
 		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
-		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciDocumentCurrentLineIndex + 1);
+		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciDocumentCurrentLineIndex);
 		::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
 		return TRUE;
 	}
