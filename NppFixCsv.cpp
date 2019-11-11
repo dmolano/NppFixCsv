@@ -43,7 +43,8 @@ wchar_t* lengthsUnicodeDataStringSettings = NULL;
 //
 // integerSplitList
 //
-IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
+//IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
+//int splitIntegerValueMax;
 
 //
 // fixCsvData -> see FixDlgProc.h
@@ -62,7 +63,17 @@ void nppFixCsv_FunctionFix()
 		CloseHandle(fixCsvData.fixThreadHandle);
 		fixCsvData.fixThreadHandle = NULL;
 	}
-	fixCsvData.integerSplitList = integerSplitList;
+	if (fixCsvData.filler != NULL) {
+		delete[] fixCsvData.filler;
+		fixCsvData.filler = NULL;
+	}
+	fixCsvData.filler = new char[fixCsvData.splitIntegerValueMax + 1];
+	if (fixCsvData.filler == NULL) {
+		Beep(1000, 10);
+		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
+	}
+	memset(fixCsvData.filler, ' ', fixCsvData.splitIntegerValueMax);
+	fixCsvData.filler[fixCsvData.splitIntegerValueMax] = 0;
 	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), nppData._nppHandle, fixDlgProc_DialogFunc, (LPARAM)&fixCsvData) == 1) {
 	}
 }
@@ -72,9 +83,9 @@ void nppFixCsv_FunctionFix()
 //
 void nppFixCsv_FunctionSettingsDlg()
 {
-	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc) == 1) {
+	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc, (LPARAM) & fixCsvData) == 1) {
 	}
-	enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (integerSplitList != NULL));
+	enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (fixCsvData.integerSplitList != NULL));
 }
 
 //
@@ -147,13 +158,18 @@ void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
 void nppFixCsv_PluginDllProcessDetach() {
 	if (fixCsvData.fixThreadHandle != NULL) {
 		CloseHandle(fixCsvData.fixThreadHandle);
+		fixCsvData.fixThreadHandle = NULL;
+	}
+	if (fixCsvData.filler != NULL) {
+		delete[] fixCsvData.filler;
+		fixCsvData.filler = NULL;
 	}
 	memset(&fixCsvData, 0, sizeof(FixCsvData));
 	if (lengthsUnicodeDataStringSettings != NULL) {
 		delete[] lengthsUnicodeDataStringSettings;
 		lengthsUnicodeDataStringSettings = NULL;
 	}
-	integerSplitter_Init(&integerSplitList);
+	integerSplitter_Init(&(fixCsvData.integerSplitList));
 }
 
 //

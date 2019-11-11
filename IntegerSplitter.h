@@ -53,4 +53,4 @@ int integerSplitter_Init(IntegerSplitPtr* integerSplitPtr);
 //
 // integerSplitter_Split
 //
-IntegerSplitPtr integerSplitter_Split(const char* string);
+IntegerSplitPtr integerSplitter_Split(const char* string, int *integerValueMax);

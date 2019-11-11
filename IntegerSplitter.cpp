@@ -88,11 +88,16 @@ int integerSplitter_AddDigit(int* digitsIndex, char* digits, int character) {
 //
 // integerSplitter_addStoredData
 //
-int integerSplitter_addStoredData(char* digits, IntegerSplitPtr* integerSplitList, int character, int* digitsIndex) {
+int integerSplitter_addStoredData(char* digits, IntegerSplitPtr* integerSplitList, int character, int* digitsIndex, int* integerValueMax) {
 	int state;
 	char* endptr;
 	int length = strtol(digits, &endptr, BASE_10);
 	if (length > 0) {
+		if (integerValueMax != NULL) {
+			if (length > * integerValueMax) {
+				*integerValueMax = length;
+			}
+		}
 		integerSplitter_Add(integerSplitList, length, character);
 		memset(digits, 0, MAX_DIGITS_LENGTH);
 		*digitsIndex = 0;
@@ -107,13 +112,16 @@ int integerSplitter_addStoredData(char* digits, IntegerSplitPtr* integerSplitLis
 //
 // integerSplitter_Split
 //
-IntegerSplitPtr integerSplitter_Split(const char* string) {
+IntegerSplitPtr integerSplitter_Split(const char* string, int* integerValueMax) {
 	IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
 	size_t lengthString = strlen(string);
 	size_t index;
 	int state;
 	char digits[MAX_DIGITS_LENGTH + 1];
 	int digitsIndex;
+	if (integerValueMax != NULL) {
+		*integerValueMax = 0;
+	}
 	for (index = 0, state = INITIAL_STATE_SPLITTER; (index < lengthString) && (state != ERROR_STATE_SPLITTER); index++) {
 		int character = string[index];
 		switch (state) {
@@ -149,7 +157,7 @@ IntegerSplitPtr integerSplitter_Split(const char* string) {
 				state = integerSplitter_AddDigit(&digitsIndex, digits, character);
 			}
 			else if (!(iswalnum(character) || iswspace(character))) {
-				state = integerSplitter_addStoredData(digits, &integerSplitList, character, &digitsIndex);
+				state = integerSplitter_addStoredData(digits, &integerSplitList, character, &digitsIndex, integerValueMax);
 			}
 			else {
 				state = ERROR_STATE_SPLITTER;
@@ -161,7 +169,7 @@ IntegerSplitPtr integerSplitter_Split(const char* string) {
 		}
 	}
 	if ((state != ERROR_STATE_SPLITTER) && (index == lengthString)) {
-		state = integerSplitter_addStoredData(digits, &integerSplitList, LAST_SEPARATOR, &digitsIndex);
+		state = integerSplitter_addStoredData(digits, &integerSplitList, LAST_SEPARATOR, &digitsIndex, integerValueMax);
 	}
 	if (state == ERROR_STATE_SPLITTER) {
 		integerSplitter_Init(&integerSplitList);

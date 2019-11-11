@@ -75,6 +75,7 @@ typedef struct FixCsvData { //name of the structure
 	// INTEGER SPLIT
 	IntegerSplitPtr integerSplitList;
 	IntegerSplitPtr integerSplitListIndex;
+	int splitIntegerValueMax;
 	// THREAD
 	HANDLE fixThreadHandle;
 	// DIALOG
@@ -90,6 +91,7 @@ typedef struct FixCsvData { //name of the structure
 	intptr_t sciDocumentCurrentLinePositionStart;
 	intptr_t sciDocumentCurrentLineCharacterPositionIndex;
 	intptr_t sciDocumentLineCharacterSplitIntegerIndex;
+	char* filler;
 }FixCsvDataType;// type of data to declare the structure
 
 //

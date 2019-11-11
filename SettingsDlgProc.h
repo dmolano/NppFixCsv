@@ -20,6 +20,11 @@
 /***************************************************************************/
 #pragma once
 
+// ERROR INIT DIALOG
+#define NO_ERROR_INIT_DIALOG 0
+
+#define ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 1
+
 //
 // settingsDlgProc_DialogFunc
 //

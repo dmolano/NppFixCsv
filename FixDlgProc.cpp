@@ -24,6 +24,12 @@
 // integerSplitList
 //
 extern IntegerSplitPtr integerSplitList;
+
+//
+// splitIntegerValueMax
+//
+extern int splitIntegerValueMax;
+
 //
 // The data of Notepad++ that you can use in your plugin commands
 //
@@ -40,13 +46,12 @@ int fixDlgProc_FixLine_reduceLine(int status, FixCsvDataPtr fixCsvDataPtr, intpt
 // fixDlgProc_FixLine_fillLine
 //
 int fixDlgProc_FixLine_fillLine(int status, FixCsvDataPtr fixCsvDataPtr, intptr_t difference) {
-	char* filler = new char[difference + 1];
-	memset(filler, ' ', difference);
-	filler[difference] = 0;
+	fixCsvDataPtr->filler[difference] = 0;
 	SendMessage(fixCsvDataPtr->currentScintilla,
 		SCI_INSERTTEXT,
 		(WPARAM)fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex - 1,
-		(LPARAM)filler);
+		(LPARAM)fixCsvDataPtr->filler);
+	fixCsvDataPtr->filler[difference] = ' ';
 	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += difference;
 	return status;
 }
