@@ -39,6 +39,11 @@ extern NppData nppData;
 // fixDlgProc_FixLine_reduceAnyCharacter
 //
 int fixDlgProc_FixLine_reduceLine(int status, FixCsvDataPtr fixCsvDataPtr, intptr_t difference) {
+	SendMessage(fixCsvDataPtr->currentScintilla,
+		SCI_DELETERANGE,
+		(WPARAM)fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex - difference - 1,
+		(LPARAM)difference);
+	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex -= difference;
 	return status;
 }
 
@@ -205,6 +210,8 @@ int fixDlgProc_FixLine(FixCsvDataPtr fixCsvDataPtr) {
 				/*
 				 * We have reached the end of the line and splits too.
 				 */
+				fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex++;
+				fixingStatus = fixDlgProc_FixLine_reduceLine(REDUCING_LINE_STATUS, fixCsvDataPtr, fixCsvDataPtr->sciDocumentLineCharacterSplitIntegerIndex - fixCsvDataPtr->integerSplitListIndex->integer);
 			}
 			break;
 		case REACHED_SEPARATOR_IN_LENGTH_SPLIT_STATUS:
