@@ -43,6 +43,7 @@ int fixDlgProc_FixLine_reduceLine(int status, FixCsvDataPtr fixCsvDataPtr, intpt
 		SCI_DELETERANGE,
 		(WPARAM)fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex - difference - 1,
 		(LPARAM)difference);
+	fixCsvDataPtr->canUndo = true;
 	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex -= difference;
 	return status;
 }
@@ -56,6 +57,7 @@ int fixDlgProc_FixLine_fillLine(int status, FixCsvDataPtr fixCsvDataPtr, intptr_
 		SCI_INSERTTEXT,
 		(WPARAM)fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex - 1,
 		(LPARAM)fixCsvDataPtr->filler);
+	fixCsvDataPtr->canUndo = true;
 	fixCsvDataPtr->filler[difference] = ' ';
 	fixCsvDataPtr->sciDocumentCurrentLineCharacterPositionIndex += difference;
 	return status;
@@ -241,8 +243,11 @@ DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 	FixCsvDataPtr fixCsvDataPtr;
 	int fixingStatus = SEARCHING_SEPARATOR_STATUS;
 	bool cancelFix = FALSE;
-
 	fixCsvDataPtr = (FixCsvDataPtr)lpParam;
+	bool buffereddraw = SendMessage(fixCsvDataPtr->currentScintilla, SCI_GETBUFFEREDDRAW, (WPARAM)TRUE, NOT_USED_LPARAM);
+	SendMessage(fixCsvDataPtr->currentScintilla, SCI_SETBUFFEREDDRAW, (WPARAM) TRUE, NOT_USED_LPARAM);
+	SendMessage(fixCsvDataPtr->currentScintilla, SCI_BEGINUNDOACTION, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	fixCsvDataPtr->canUndo = false;
 	// We begin to fix each line of the document.
 	// We check that after fixing a line, they have not pressed the cancel button: button cancel is enabled.
 	for (fixCsvDataPtr->sciDocumentCurrentLineIndex = 0, fixCsvDataPtr->sciDocumentCurrentLinePositionStart = 0;
@@ -257,7 +262,12 @@ DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 		// Then, we verify that we do not have a cancellation.
 		cancelFix = !IsWindowEnabled(fixCsvDataPtr->buttonCancelHandle);
 	}
+	SendMessage(fixCsvDataPtr->currentScintilla, SCI_ENDUNDOACTION, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	SendMessage(fixCsvDataPtr->currentScintilla, SCI_SETBUFFEREDDRAW, (WPARAM)buffereddraw, NOT_USED_LPARAM);
 	if (fixingStatus >= ERROR_REACHED_ENDOFLINE_STATUS) {
+		if (fixCsvDataPtr->canUndo == true) {
+			SendMessage(fixCsvDataPtr->currentScintilla, SCI_UNDO, NOT_USED_WPARAM, NOT_USED_LPARAM);
+		}
 		// Progress bar in red.
 		SendMessage(fixCsvDataPtr->progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_ERROR, NOT_USED_LPARAM);
 		// Requesting to display an error message in the dialog window with the line as information.
@@ -363,6 +373,7 @@ INT_PTR CALLBACK fixDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 		wchar_t buffer[LENGTH_ERROR_FIXING_TEXT];
 		swprintf_s(buffer, LENGTH_ERROR_FIXING_TEXT, TEXT(ERROR_FIXING_TEXT), fixCsvDataPtr->sciDocumentCurrentLineIndex);
 		::MessageBox(hWndDlg, buffer, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+		SendMessage(fixCsvDataPtr->currentScintilla, SCI_GOTOLINE, (WPARAM)fixCsvDataPtr->sciDocumentCurrentLineIndex, NOT_USED_LPARAM);
 		return TRUE;
 	}
 							 // break;

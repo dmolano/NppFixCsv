@@ -92,6 +92,7 @@ typedef struct FixCsvData { //name of the structure
 	intptr_t sciDocumentCurrentLineCharacterPositionIndex;
 	intptr_t sciDocumentLineCharacterSplitIntegerIndex;
 	char* filler;
+	bool canUndo;
 }FixCsvDataType;// type of data to declare the structure
 
 //
