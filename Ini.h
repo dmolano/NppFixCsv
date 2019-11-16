@@ -20,6 +20,8 @@
 /***************************************************************************/
 #pragma once
 
+#define INI_NUMDIGIT	64
+
 //
 // IniData
 // 
@@ -38,4 +40,37 @@ typedef IniDataType* IniDataPtr;
 //
 // ini_setIniPath
 //
-errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath);
+errno_t ini_SetIniPath(const IniDataPtr iniData, const TCHAR* setPath);
+
+//
+// ini_WriteDate
+// The return value of write type is normal except 0, 0 is error
+//NUMDIGIT = 64digit
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float data);
+
+//
+// ini_WriteDate
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int data);
+
+//
+// ini_WriteDate
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, const TCHAR* data);
+
+//
+// ini_ReadDate
+// Return value is the number of characters read http://msdn.microsoft.com/en-us/library/cc429779.aspx
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, TCHAR* data, int dataSize);
+
+//
+// ini_ReadDate
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data);
+
+//
+// ini_ReadDate
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data);

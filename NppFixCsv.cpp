@@ -218,7 +218,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
 		SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
 		iniData.errnoInited = EOTHER;
 		iniData.fileName = NPP_PLUGIN_NAME;
-		if (ini_setIniPath(&iniData, configDir) != NOERROR) {
+		if (ini_SetIniPath(&iniData, configDir) != NOERROR) {
 			// TODO Without iniData.
 		}
 		break;

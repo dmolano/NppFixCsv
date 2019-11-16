@@ -23,13 +23,12 @@
 //
 // ini_setIniPath
 //
-errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
+errno_t ini_SetIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
 	if (iniData->errnoInited == NOERROR) {
 		return iniData->errnoInited;
 	}
 	errno_t flag;
 	// If there is no executable file
-	// Si no hay un archivo ejecutable
 	if (setPath == NULL) {
 		TCHAR* ptsLastDirectory;
 		GetModuleFileName(NULL, iniData->path, _MAX_PATH);
@@ -44,7 +43,6 @@ errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
 		}
 	}
 	// Create full path of ini file
-	// Crear ruta completa del archivo ini
 	flag = _tcscpy_s(iniData->fullPath, MAX_PATH, iniData->path);
 	if (flag != NOERROR) {
 		iniData->errnoInited = flag;
@@ -62,4 +60,71 @@ errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
 	}
 	iniData->errnoInited = NOERROR;
 	return iniData->errnoInited;
+}
+
+//
+// ini_WriteDate
+// The return value of write type is normal except 0, 0 is error
+//NUMDIGIT = 64digit
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float data) {
+	TCHAR buf[INI_NUMDIGIT];
+	_stprintf_s(buf, INI_NUMDIGIT, _T("%f"), data);
+	return (int)WritePrivateProfileString(section, key, buf, iniData->fullPath);
+}
+
+//
+// ini_WriteDate
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int data) {
+	TCHAR buf[INI_NUMDIGIT];
+	_itot_s(data, buf, INI_NUMDIGIT, 10);
+	return (int)WritePrivateProfileString(section, key, buf, iniData->fullPath);
+}
+
+//
+// ini_WriteDate
+//
+int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, const TCHAR* data) {
+	return (int)WritePrivateProfileString(section, key, data, iniData->fullPath);
+}
+
+//
+// ini_ReadDate
+// Return value is the number of characters read http://msdn.microsoft.com/en-us/library/cc429779.aspx
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, TCHAR* data, int dataSize) {
+	return (int)GetPrivateProfileString(section, key, _T(""), data, (DWORD)dataSize, iniData->fullPath);
+}
+
+//
+// ini_ReadDate
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data) {
+	TCHAR buf[INI_NUMDIGIT];
+	int readSize;
+	readSize = (int)GetPrivateProfileString(section, key, _T(""), buf, (DWORD)INI_NUMDIGIT, iniData->fullPath);
+	if ((readSize == (INI_NUMDIGIT - 1)) || (readSize == (INI_NUMDIGIT - 2))) {
+		*data = 0;
+		return 0;
+	}
+	*data = _ttoi(buf);
+
+	return readSize;
+}
+
+//
+// ini_ReadDate
+//
+int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data) {
+	TCHAR buf[INI_NUMDIGIT];
+	int readSize;
+	readSize = (int)GetPrivateProfileString(section, key, _T(""), buf, (DWORD)INI_NUMDIGIT, iniData->fullPath);
+	if ((readSize == (INI_NUMDIGIT - 1)) || (readSize == (INI_NUMDIGIT - 2))) {
+		*data = 0;
+		return 0;
+	}
+	*data = (float)_tstof(buf);
+
+	return readSize;
 }
