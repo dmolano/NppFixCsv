@@ -158,6 +158,7 @@
     <ClInclude Include="AboutDlgProc.h" />
     <ClInclude Include="FixDlgProc.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Ini.h" />
     <ClInclude Include="IntegerSplitter.h" />
     <ClInclude Include="Notepad_plus_msgs.h" />
     <ClInclude Include="NppFixCsv.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="AboutDlgProc.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FixDlgProc.cpp" />
+    <ClCompile Include="Ini.cpp" />
     <ClCompile Include="IntegerSplitter.cpp" />
     <ClCompile Include="NppFixCsv.cpp" />
     <ClCompile Include="pch.cpp">
