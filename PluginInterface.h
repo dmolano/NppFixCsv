@@ -29,6 +29,9 @@
 #ifndef PLUGININTERFACE_H
 #define PLUGININTERFACE_H
 
+#define NPP_FIX_CSV_MAJOR_VERSION_NUMBER 0
+#define NPP_FIX_CSV_MINOR_VERSION_NUMBER 1
+
 #ifndef SCINTILLA_H
 #include "Scintilla.h"
 #endif //SCINTILLA_H
