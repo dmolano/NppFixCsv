@@ -19,3 +19,23 @@
 /*                                                                         */
 /***************************************************************************/
 #pragma once
+
+//
+// IniData
+// 
+typedef struct IniData { //name of the structure
+	errno_t errnoInited;
+	TCHAR path[MAX_PATH];
+	const TCHAR* fileName;
+	TCHAR fullPath[MAX_PATH];
+}IniDataType;// type of data to declare the structure
+
+//
+// IniDataPtr
+//
+typedef IniDataType* IniDataPtr;
+
+//
+// ini_setIniPath
+//
+errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath);

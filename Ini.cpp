@@ -19,3 +19,47 @@
 /*                                                                         */
 /***************************************************************************/
 #include "pch.h"
+
+//
+// ini_setIniPath
+//
+errno_t ini_setIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
+	if (iniData->errnoInited == NOERROR) {
+		return iniData->errnoInited;
+	}
+	errno_t flag;
+	// If there is no executable file
+	// Si no hay un archivo ejecutable
+	if (setPath == NULL) {
+		TCHAR* ptsLastDirectory;
+		GetModuleFileName(NULL, iniData->path, _MAX_PATH);
+		ptsLastDirectory = _tcsrchr(iniData->path, _T('\\'));
+		*ptsLastDirectory = _T('\0');
+	}
+	else {
+		flag = _tcscpy_s(iniData->path, MAX_PATH, setPath);
+		if (flag != NOERROR) {
+			iniData->errnoInited = flag;
+			return flag;
+		}
+	}
+	// Create full path of ini file
+	// Crear ruta completa del archivo ini
+	flag = _tcscpy_s(iniData->fullPath, MAX_PATH, iniData->path);
+	if (flag != NOERROR) {
+		iniData->errnoInited = flag;
+		return flag;
+	}
+	flag = _tcscat_s(iniData->fullPath, MAX_PATH, _T("\\"));
+	if (flag != NOERROR) {
+		iniData->errnoInited = flag;
+		return flag;
+	}
+	flag = _tcscat_s(iniData->fullPath, MAX_PATH, iniData->fileName);
+	if (flag != NOERROR) {
+		iniData->errnoInited = flag;
+		return flag; 
+	}
+	iniData->errnoInited = NOERROR;
+	return iniData->errnoInited;
+}

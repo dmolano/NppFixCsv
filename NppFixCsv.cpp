@@ -36,6 +36,11 @@ FuncItem functionItems[NPP_PLUGIN_FUNCTIONS];
 NppData nppData;
 
 //
+// IniData
+//
+IniData iniData;
+
+//
 // lengthsUnicodeDataStringSettings
 //
 wchar_t* lengthsUnicodeDataStringSettings = NULL;
@@ -208,7 +213,14 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
 	switch (notifyCode->nmhdr.code)
 	{
 	case NPPN_READY: 
+		TCHAR configDir[MAX_PATH];
 		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
+		SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
+		iniData.errnoInited = EOTHER;
+		iniData.fileName = NPP_PLUGIN_NAME;
+		if (ini_setIniPath(&iniData, configDir) != NOERROR) {
+			// TODO Without iniData.
+		}
 		break;
 	case NPPN_SHUTDOWN:
 		nppFixCsv_CommandMenuCleanUp();
