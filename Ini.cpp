@@ -58,6 +58,11 @@ errno_t ini_SetIniPath(const IniDataPtr iniData, const TCHAR* setPath) {
 		iniData->errnoInited = flag;
 		return flag; 
 	}
+	flag = _tcscat_s(iniData->fullPath, MAX_PATH, _T(".ini"));
+	if (flag != NOERROR) {
+		iniData->errnoInited = flag;
+		return flag;
+	}
 	iniData->errnoInited = NOERROR;
 	return iniData->errnoInited;
 }

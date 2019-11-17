@@ -36,25 +36,31 @@ FuncItem functionItems[NPP_PLUGIN_FUNCTIONS];
 NppData nppData;
 
 //
-// IniData
-//
-IniData iniData;
-
-//
 // lengthsUnicodeDataStringSettings
 //
 wchar_t* lengthsUnicodeDataStringSettings = NULL;
 
 //
-// integerSplitList
-//
-//IntegerSplitPtr integerSplitList = INTEGER_SPLITTER_NULL;
-//int splitIntegerValueMax;
-
-//
 // fixCsvData -> see FixDlgProc.h
 //
 FixCsvData fixCsvData;
+
+//
+// fixCsvIniData
+//
+FixCsvIniData fixCsvIniData;
+
+//
+// nppFixCsv_RefreshSettingsIni
+//
+errno_t nppFixCsv_RefreshSettingsIni() {
+	errno_t result = NOERROR;
+
+	if (ini_WriteDate(&(fixCsvIniData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), 0) != NOERROR) {
+		// TODO Error
+	}
+	return result;
+}
 
 //----------------------------------------------//
 //-- STEP 4. DEFINE YOUR ASSOCIATED FUNCTIONS --//
@@ -91,6 +97,9 @@ void nppFixCsv_FunctionSettingsDlg()
 	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc, (LPARAM) & fixCsvData) == 1) {
 	}
 	enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (fixCsvData.integerSplitList != NULL));
+	if (fixCsvData.integerSplitList != NULL) {
+		nppFixCsv_RefreshSettingsIni();
+	}
 }
 
 //
@@ -178,6 +187,23 @@ void nppFixCsv_PluginDllProcessDetach() {
 }
 
 //
+// nppFixCsv_StartIni
+//
+errno_t nppFixCsv_StartIni() {
+	TCHAR configDir[MAX_PATH];
+	errno_t result;
+
+	SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
+	fixCsvIniData.iniData.errnoInited = EOTHER;
+	fixCsvIniData.iniData.fileName = NPP_PLUGIN_NAME;
+	result = ini_SetIniPath(&(fixCsvIniData.iniData), configDir);
+	if (result == NOERROR) {
+
+	}
+	return result;
+}
+
+//
 // setInfo lo utiliza NotePad++ para acceder al Plugin, y proporcionarle información a través de la estructura PFUNCSETINFO.
 // NppData está definido en PluginInterface.h
 //
@@ -213,12 +239,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
 	switch (notifyCode->nmhdr.code)
 	{
 	case NPPN_READY: 
-		TCHAR configDir[MAX_PATH];
 		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
-		SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
-		iniData.errnoInited = EOTHER;
-		iniData.fileName = NPP_PLUGIN_NAME;
-		if (ini_SetIniPath(&iniData, configDir) != NOERROR) {
+		if (nppFixCsv_StartIni() != NOERROR) {
 			// TODO Without iniData.
 		}
 		break;

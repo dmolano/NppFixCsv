@@ -31,6 +31,8 @@
 // agregue aquí los encabezados que desea precompilar
 #include "framework.h"
 
+#include "Ini.h"
+
 #include "NppFixCsv.h"
 
 #include "resource.h"
@@ -46,8 +48,6 @@
 #include "StringUtilities.h"
 
 #include "WindowUtilities.h"
-
-#include "Ini.h"
 
 #include "IntegerSplitter.h"
 
