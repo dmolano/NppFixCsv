@@ -33,6 +33,12 @@
 
 #include "Ini.h"
 
+#include "IntegerSplitter.h"
+
+#include "SettingsDlgProc.h"
+
+#include "FixDlgProc.h"
+
 #include "NppFixCsv.h"
 
 #include "resource.h"
@@ -49,12 +55,6 @@
 
 #include "WindowUtilities.h"
 
-#include "IntegerSplitter.h"
-
 #include "AboutDlgProc.h"
-
-#include "SettingsDlgProc.h"
-
-#include "FixDlgProc.h"
 
 #endif //PCH_H

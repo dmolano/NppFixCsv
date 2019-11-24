@@ -25,6 +25,29 @@
 
 #define ERROR_INIT_DIALOG NO_ERROR_INIT_DIALOG + 1
 
+#define NPP_FIX_CSV_SETTINGS_MAJOR_VERSION_NUMBER 0
+#define NPP_FIX_CSV_SETTINGS_MINOR_VERSION_NUMBER 1
+
+//
+// SettingsData
+// 
+typedef struct SettingsData { //name of the structure
+	int nppFixCsvMajorVersionNumber;
+	int nppFixCsvMinorVersionNumber;
+	int nppFixCsvSettingsMajorVersionNumber;
+	int nppFixCsvSettingsMinorVersionNumber;
+	int lengthsUnicodeDataLength;
+	wchar_t* lengthsUnicodeDataString;
+	int splitIntegerValueMax;
+	IntegerSplitPtr integerSplitList;
+}SettingsDataType;// type of data to declare the structure
+
+//
+// SettingsDataPtr
+//
+typedef SettingsDataType* SettingsDataPtr;
+
+
 //
 // settingsDlgProc_DialogFunc
 //

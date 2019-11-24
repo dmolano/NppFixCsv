@@ -21,26 +21,21 @@
 #include "pch.h"
 
 //
-// lengthsUnicodeDataStringSettings
+// settingsDataPtr
 //
-extern wchar_t* lengthsUnicodeDataStringSettings;
-
-//
-// fixCsvDataPtr
-//
-FixCsvDataPtr fixCsvDataPtr;
+SettingsDataPtr settingsDataPtr;
 
 //
 // settinsDlgProc_InitEditAndButton
 //
-void settinsDlgProc_InitEditAndButton(HWND hWndDlg) {
+void settinsDlgProc_InitEditAndButton(HWND hWndDlg, SettingsDataPtr settingsDataPtr) {
 	HWND editTextHwnd;
 	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
 	SetFocus(editTextHwnd);
 	HWND buttonOkHwnd;
 	buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
-	if (lengthsUnicodeDataStringSettings != NULL) {
-		SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(lengthsUnicodeDataStringSettings));
+	if (settingsDataPtr->lengthsUnicodeDataString != NULL) {
+		SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(settingsDataPtr->lengthsUnicodeDataString));
 		SendDlgItemMessage(editTextHwnd, IDC_EDIT_LENGTHS, EM_SETSEL, 0, -1);
 		EnableWindow(buttonOkHwnd, TRUE);
 	}
@@ -58,21 +53,22 @@ int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
 	LRESULT lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
 	if (lengthData > 0) {
+		settingsDataPtr->lengthsUnicodeDataLength = lengthData;
 		wchar_t* lengthsUnicodeDataSettingsTemporal = new wchar_t[lengthData + 1];
 		SendMessage(editTextHwnd, WM_GETTEXT, lengthData + 1, LPARAM(lengthsUnicodeDataSettingsTemporal));
 		char* lengthsDataSettingsTemporal = wchar_t2char(lengthsUnicodeDataSettingsTemporal);
-		IntegerSplitPtr integerSplitListTemporal = integerSplitter_Split(lengthsDataSettingsTemporal, &(fixCsvDataPtr->splitIntegerValueMax));
+		IntegerSplitPtr integerSplitListTemporal = integerSplitter_Split(lengthsDataSettingsTemporal, &(settingsDataPtr->splitIntegerValueMax));
 		delete[] lengthsDataSettingsTemporal;
 		if (integerSplitListTemporal != NULL) {
-			if (lengthsUnicodeDataStringSettings != NULL) {
-				delete[] lengthsUnicodeDataStringSettings;
-				lengthsUnicodeDataStringSettings = NULL;
+			if (settingsDataPtr->lengthsUnicodeDataString != NULL) {
+				delete[] settingsDataPtr->lengthsUnicodeDataString;
+				settingsDataPtr->lengthsUnicodeDataString = NULL;
 			}
-			if (fixCsvDataPtr->integerSplitList != NULL) {
-				integerSplitter_Init(&(fixCsvDataPtr->integerSplitList));
+			if (settingsDataPtr->integerSplitList != NULL) {
+				integerSplitter_Init(&(settingsDataPtr->integerSplitList));
 			}
-			lengthsUnicodeDataStringSettings = lengthsUnicodeDataSettingsTemporal;
-			fixCsvDataPtr->integerSplitList = integerSplitListTemporal;
+			settingsDataPtr->lengthsUnicodeDataString = lengthsUnicodeDataSettingsTemporal;
+			settingsDataPtr->integerSplitList = integerSplitListTemporal;
 			result = TRUE;
 		}
 		else {
@@ -90,13 +86,13 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		centerWndDlg(hWndDlg);
-		settinsDlgProc_InitEditAndButton(hWndDlg);
 		if (lParam == NULL) {
 			EndDialog(hWndDlg, ERROR_INIT_DIALOG);
 			return TRUE;
 		}
-		fixCsvDataPtr = (FixCsvDataPtr)lParam;
+		settingsDataPtr = (SettingsDataPtr)lParam;
+		centerWndDlg(hWndDlg);
+		settinsDlgProc_InitEditAndButton(hWndDlg, settingsDataPtr);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))

@@ -56,16 +56,21 @@ const TCHAR NPP_PLUGIN_ABOUT_MENUITEM_NAME[] = TEXT("About...");
 const int NPP_PLUGIN_ABOUT_MENUITEM_INDEX = 2;
 
 //
-// FixCsvIniData
+// FixCsvData
 // 
-typedef struct FixCsvIniData { //name of the structure
+typedef struct FixCsvData { //name of the structure
+	FuncItem functionItems[NPP_PLUGIN_FUNCTIONS];
+	HINSTANCE g_DllhInst;
+	NppData nppData;
+	SettingsData settingsData;
 	IniData iniData;
-}FixCsvIniDataType;// type of data to declare the structure
+	FixingData fixingData;
+}FixCsvDataType;// type of data to declare the structure
 
 //
-// IniDataPtr
+// FixCsvDataPtr
 //
-typedef FixCsvIniDataType* FixCsvIniDataPtr;
+typedef FixCsvDataType* FixCsvDataPtr;
 
 //
 // Initialization of your plugin data

@@ -22,6 +22,8 @@
 
 #define INI_NUMDIGIT	64
 
+#define DEFAULT_EMPTY_STRING NULL
+
 //
 // IniData
 // 
@@ -43,34 +45,33 @@ typedef IniDataType* IniDataPtr;
 errno_t ini_SetIniPath(const IniDataPtr iniData, const TCHAR* setPath);
 
 //
-// ini_WriteDate
+// ini_WriteFloatData
 // The return value of write type is normal except 0, 0 is error
 //NUMDIGIT = 64digit
 //
-int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float data);
+DWORD ini_WriteFloatData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float data);
 
 //
-// ini_WriteDate
+// ini_WriteIntData
 //
-int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int data);
+DWORD ini_WriteIntData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int data);
 
 //
-// ini_WriteDate
+// ini_WriteStringData
 //
-int ini_WriteDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, const TCHAR* data);
+DWORD ini_WriteStringData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, const TCHAR* data);
 
 //
-// ini_ReadDate
-// Return value is the number of characters read http://msdn.microsoft.com/en-us/library/cc429779.aspx
+// ini_ReadData
 //
-int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, TCHAR* data, int dataSize);
+DWORD ini_ReadStringData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, TCHAR* data, int dataSize);
 
 //
-// ini_ReadDate
+// ini_ReadData
 //
-int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data);
+DWORD ini_ReadData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data);
 
 //
-// ini_ReadDate
+// ini_ReadData
 //
-int ini_ReadDate(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data);
+DWORD ini_ReadData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data);

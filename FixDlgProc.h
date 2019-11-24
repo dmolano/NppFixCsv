@@ -67,15 +67,14 @@
 #define ERROR_REACHED_ENDOFLINE_STATUS SEARCHING_SEPARATOR_STATUS + 100
 
 //
-// FixCsvData
+// FixingData
 // 
-typedef struct FixCsvData { //name of the structure
+typedef struct FixingData { //name of the structure
 	// Fixing
 	int fixingStatus;
 	// INTEGER SPLIT
 	IntegerSplitPtr integerSplitList;
 	IntegerSplitPtr integerSplitListIndex;
-	int splitIntegerValueMax;
 	// THREAD
 	HANDLE fixThreadHandle;
 	// DIALOG
@@ -93,12 +92,12 @@ typedef struct FixCsvData { //name of the structure
 	intptr_t sciDocumentLineCharacterSplitIntegerIndex;
 	char* filler;
 	bool canUndo;
-}FixCsvDataType;// type of data to declare the structure
+}FixingDataType;// type of data to declare the structure
 
 //
-// FixCsvDataPtr
+// FixingDataPtr
 //
-typedef FixCsvDataType* FixCsvDataPtr;
+typedef FixingDataType* FixingDataPtr;
 
 //
 // fixDlgProc_DialogFunc

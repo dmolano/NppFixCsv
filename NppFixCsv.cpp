@@ -21,42 +21,34 @@
 #include "pch.h"
 
 //
-// g_DllhInst
-//
-HINSTANCE g_DllhInst;
-
-//
-// The plugin data that Notepad++ needs
-//
-FuncItem functionItems[NPP_PLUGIN_FUNCTIONS];
-
-//
-// The data of Notepad++ that you can use in your plugin commands
-//
-NppData nppData;
-
-//
-// lengthsUnicodeDataStringSettings
-//
-wchar_t* lengthsUnicodeDataStringSettings = NULL;
-
-//
-// fixCsvData -> see FixDlgProc.h
+// fixCsvData
 //
 FixCsvData fixCsvData;
 
 //
-// fixCsvIniData
+// nppFixCsv_ReadSettingsIni
 //
-FixCsvIniData fixCsvIniData;
+DWORD nppFixCsv_ReadSettingsIni() {
+	DWORD result = NOERROR;
+	//result = ini_ReadStringData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), &fixCsvData.settingsData.lengthsUnicodeDataString);
+	return result;
+}
 
 //
 // nppFixCsv_RefreshSettingsIni
 //
-errno_t nppFixCsv_RefreshSettingsIni() {
-	errno_t result = NOERROR;
+DWORD nppFixCsv_WriteSettingsIni() {
+	DWORD result = NOERROR;
 
-	if (ini_WriteDate(&(fixCsvIniData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), 0) != NOERROR) {
+	if (((result = ini_WriteIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("MAJOR_VERSION_NUMBER"), fixCsvData.settingsData.nppFixCsvMajorVersionNumber)) == NOERROR) &&
+		((result = ini_WriteIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("MINOR_VERSION_NUMBER"), fixCsvData.settingsData.nppFixCsvMinorVersionNumber)) == NOERROR) &&
+		((result = ini_WriteIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("SETTINGS_MAJOR_VERSION_NUMBER"), fixCsvData.settingsData.nppFixCsvSettingsMajorVersionNumber)) == NOERROR) &&
+		((result = ini_WriteIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("SETTINGS_MINOR_VERSION_NUMBER"), fixCsvData.settingsData.nppFixCsvSettingsMinorVersionNumber)) == NOERROR) &&
+		((result = ini_WriteIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_LENGTH"), fixCsvData.settingsData.lengthsUnicodeDataLength)) == NOERROR) &&
+		((result = ini_WriteStringData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), fixCsvData.settingsData.lengthsUnicodeDataString)) == NOERROR)) {
+		// TODO OK
+	}
+	else {
 		// TODO Error
 	}
 	return result;
@@ -70,22 +62,22 @@ errno_t nppFixCsv_RefreshSettingsIni() {
 //
 void nppFixCsv_FunctionFix()
 {
-	if (fixCsvData.fixThreadHandle != NULL) {
-		CloseHandle(fixCsvData.fixThreadHandle);
-		fixCsvData.fixThreadHandle = NULL;
+	if (fixCsvData.fixingData.fixThreadHandle != NULL) {
+		CloseHandle(fixCsvData.fixingData.fixThreadHandle);
+		fixCsvData.fixingData.fixThreadHandle = NULL;
 	}
-	if (fixCsvData.filler != NULL) {
-		delete[] fixCsvData.filler;
-		fixCsvData.filler = NULL;
+	if (fixCsvData.fixingData.filler != NULL) {
+		delete[] fixCsvData.fixingData.filler;
+		fixCsvData.fixingData.filler = NULL;
 	}
-	fixCsvData.filler = new char[fixCsvData.splitIntegerValueMax + 1];
-	if (fixCsvData.filler == NULL) {
+	fixCsvData.fixingData.filler = new char[fixCsvData.settingsData.splitIntegerValueMax + 1];
+	if (fixCsvData.fixingData.filler == NULL) {
 		Beep(1000, 10);
-		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
+		enableMenuItem(fixCsvData.nppData._nppHandle, fixCsvData.functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
 	}
-	memset(fixCsvData.filler, ' ', fixCsvData.splitIntegerValueMax);
-	fixCsvData.filler[fixCsvData.splitIntegerValueMax] = 0;
-	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), nppData._nppHandle, fixDlgProc_DialogFunc, (LPARAM)&fixCsvData) == 1) {
+	memset(fixCsvData.fixingData.filler, ' ', fixCsvData.settingsData.splitIntegerValueMax);
+	fixCsvData.fixingData.filler[fixCsvData.settingsData.splitIntegerValueMax] = 0;
+	if (DialogBoxParam(fixCsvData.g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_FIX), fixCsvData.nppData._nppHandle, fixDlgProc_DialogFunc, (LPARAM)&fixCsvData) == 1) {
 	}
 }
 
@@ -94,11 +86,16 @@ void nppFixCsv_FunctionFix()
 //
 void nppFixCsv_FunctionSettingsDlg()
 {
-	if (DialogBoxParam(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), nppData._nppHandle, settingsDlgProc_DialogFunc, (LPARAM) & fixCsvData) == 1) {
+	if (DialogBoxParam(fixCsvData.g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_SETTINGS), fixCsvData.nppData._nppHandle, settingsDlgProc_DialogFunc, (LPARAM) &(fixCsvData.settingsData)) == 1) {
+		fixCsvData.settingsData.nppFixCsvMajorVersionNumber = NPP_FIX_CSV_MAJOR_VERSION_NUMBER;
+		fixCsvData.settingsData.nppFixCsvMinorVersionNumber = NPP_FIX_CSV_MINOR_VERSION_NUMBER;
+		fixCsvData.settingsData.nppFixCsvSettingsMajorVersionNumber = NPP_FIX_CSV_SETTINGS_MAJOR_VERSION_NUMBER;
+		fixCsvData.settingsData.nppFixCsvSettingsMinorVersionNumber = NPP_FIX_CSV_SETTINGS_MINOR_VERSION_NUMBER;
+		fixCsvData.fixingData.integerSplitList = fixCsvData.settingsData.integerSplitList;
 	}
-	enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (fixCsvData.integerSplitList != NULL));
-	if (fixCsvData.integerSplitList != NULL) {
-		nppFixCsv_RefreshSettingsIni();
+	enableMenuItem(fixCsvData.nppData._nppHandle, fixCsvData.functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (fixCsvData.fixingData.integerSplitList != NULL));
+	if (fixCsvData.fixingData.integerSplitList != NULL) {
+		nppFixCsv_WriteSettingsIni();
 	}
 }
 
@@ -107,7 +104,7 @@ void nppFixCsv_FunctionSettingsDlg()
 //
 void nppFixCsv_FunctionAboutDlg()
 {
-	if (DialogBox(g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_ABOUT), nppData._nppHandle, aboutDlgProc_DialogFunc) == 1) {
+	if (DialogBox(fixCsvData.g_DllhInst, MAKEINTRESOURCE(IDD_DIALOG_ABOUT), fixCsvData.nppData._nppHandle, aboutDlgProc_DialogFunc) == 1) {
 	}
 }
 
@@ -122,10 +119,10 @@ bool nppFixCsv_SetPluginCommand(size_t index, const TCHAR* cmdName, PFUNCPLUGINC
 	if (!pFunc) {
 		return false;
 	}
-	lstrcpy(functionItems[index]._itemName, cmdName);
-	functionItems[index]._pFunc = pFunc;
-	functionItems[index]._init2Check = check0nInit;
-	functionItems[index]._pShKey = sk;
+	lstrcpy(fixCsvData.functionItems[index]._itemName, cmdName);
+	fixCsvData.functionItems[index]._pFunc = pFunc;
+	fixCsvData.functionItems[index]._init2Check = check0nInit;
+	fixCsvData.functionItems[index]._pShKey = sk;
 	return true;
 }
 
@@ -162,28 +159,28 @@ void nppFixCsv_CommandMenuInit()
 // It will be called while plugin loading 
 //
 void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
-	g_DllhInst = (HINSTANCE)hModule;
-	memset(&fixCsvData, 0, sizeof(FixCsvData));
+	fixCsvData.g_DllhInst = (HINSTANCE)hModule;
+	memset(&(fixCsvData.fixingData), 0, sizeof(FixingData));
 }
 
 //
 // nppFixCsv_PluginDllProcessDetach
 //    
 void nppFixCsv_PluginDllProcessDetach() {
-	if (fixCsvData.fixThreadHandle != NULL) {
-		CloseHandle(fixCsvData.fixThreadHandle);
-		fixCsvData.fixThreadHandle = NULL;
+	if (fixCsvData.fixingData.fixThreadHandle != NULL) {
+		CloseHandle(fixCsvData.fixingData.fixThreadHandle);
+		fixCsvData.fixingData.fixThreadHandle = NULL;
 	}
-	if (fixCsvData.filler != NULL) {
-		delete[] fixCsvData.filler;
-		fixCsvData.filler = NULL;
+	if (fixCsvData.fixingData.filler != NULL) {
+		delete[] fixCsvData.fixingData.filler;
+		fixCsvData.fixingData.filler = NULL;
 	}
-	memset(&fixCsvData, 0, sizeof(FixCsvData));
-	if (lengthsUnicodeDataStringSettings != NULL) {
-		delete[] lengthsUnicodeDataStringSettings;
-		lengthsUnicodeDataStringSettings = NULL;
-	}
-	integerSplitter_Init(&(fixCsvData.integerSplitList));
+	integerSplitter_Init(&(fixCsvData.fixingData.integerSplitList));
+	memset(&(fixCsvData.fixingData), 0, sizeof(FixingData));
+	//	if (lengthsUnicodeDataStringSettings != NULL) {
+//		delete[] lengthsUnicodeDataStringSettings;
+//		lengthsUnicodeDataStringSettings = NULL;
+//	}
 }
 
 //
@@ -193,10 +190,10 @@ errno_t nppFixCsv_StartIni() {
 	TCHAR configDir[MAX_PATH];
 	errno_t result;
 
-	SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
-	fixCsvIniData.iniData.errnoInited = EOTHER;
-	fixCsvIniData.iniData.fileName = NPP_PLUGIN_NAME;
-	result = ini_SetIniPath(&(fixCsvIniData.iniData), configDir);
+	SendMessage(fixCsvData.nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)configDir);
+	fixCsvData.iniData.errnoInited = EOTHER;
+	fixCsvData.iniData.fileName = NPP_PLUGIN_NAME;
+	result = ini_SetIniPath(&(fixCsvData.iniData), configDir);
 	if (result == NOERROR) {
 
 	}
@@ -207,41 +204,40 @@ errno_t nppFixCsv_StartIni() {
 // setInfo lo utiliza NotePad++ para acceder al Plugin, y proporcionarle información a través de la estructura PFUNCSETINFO.
 // NppData está definido en PluginInterface.h
 //
-extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData)
-{
-	nppData = notepadPlusData;
+extern "C" __declspec(dllexport) void setInfo(NppData notepadPlusData) {
+	fixCsvData.nppData = notepadPlusData;
 	nppFixCsv_CommandMenuInit();
 }
 
 //
 // getName lo utiliza NotePad++ para acceder al Plugin.
 //
-extern "C" __declspec(dllexport) const TCHAR * getName()
-{
+extern "C" __declspec(dllexport) const TCHAR * getName() {
 	return NPP_PLUGIN_NAME; // Definido en NppFixCsv.h
 }
 
 //
 // getFuncsArray lo utiliza NotePad++ para acceder al Plugin, y averiguar el número de funciones, así como, tener una referencia a estas.
 //
-extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int* nbF)
-{
+extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int* nbF) {
 	*nbF = NPP_PLUGIN_FUNCTIONS; // NPP_PLUGIN_FUNCTIONS definido en NppFixCsv.h
-	return functionItems; // functionItems definido en NppFixCsv.cpp
+	return fixCsvData.functionItems; // functionItems definido en NppFixCsv.cpp
 }
 
 //
 // beNotified lo utiliza NotePad++ para acceder al Plugin, y notificarle cambios a través de la estructura PBENOTIFIED.
 // SCNotification está definido en PluginInterface.h
 //
-extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
-{
+extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode) {
 	switch (notifyCode->nmhdr.code)
 	{
 	case NPPN_READY: 
-		enableMenuItem(nppData._nppHandle, functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
+		enableMenuItem(fixCsvData.nppData._nppHandle, fixCsvData.functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);
 		if (nppFixCsv_StartIni() != NOERROR) {
 			// TODO Without iniData.
+		}
+		else {
+			nppFixCsv_ReadSettingsIni();
 		}
 		break;
 	case NPPN_SHUTDOWN:
@@ -257,8 +253,7 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification * notifyCode)
 // Please let me know if you need to access to some messages :
 // http://sourceforge.net/forum/forum.php?forum_id=482781
 //
-extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
+extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) {
 	/*
 		if (Message == WM_MOVE)
 		{
@@ -269,8 +264,7 @@ extern "C" __declspec(dllexport) LRESULT messageProc(UINT /*Message*/, WPARAM /*
 }
 
 #ifdef UNICODE
-extern "C" __declspec(dllexport) BOOL isUnicode()
-{
+extern "C" __declspec(dllexport) BOOL isUnicode() {
 	return TRUE;
 }
 #endif //UNICODE
