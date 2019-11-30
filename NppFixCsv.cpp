@@ -30,7 +30,33 @@ FixCsvData fixCsvData;
 //
 DWORD nppFixCsv_ReadSettingsIni() {
 	DWORD result = NOERROR;
-	//result = ini_ReadStringData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), &fixCsvData.settingsData.lengthsUnicodeDataString);
+	result = ini_ReadIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("MAJOR_VERSION_NUMBER"), &(fixCsvData.settingsData.nppFixCsvMajorVersionNumber));
+	if (result != NOERROR) {
+		return result;
+	}
+	result = ini_ReadIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("MINOR_VERSION_NUMBER"), &(fixCsvData.settingsData.nppFixCsvMinorVersionNumber));
+	if (result != NOERROR) {
+		return result;
+	}
+	result = ini_ReadIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("SETTINGS_MAJOR_VERSION_NUMBER"), &(fixCsvData.settingsData.nppFixCsvSettingsMajorVersionNumber));
+	if (result != NOERROR) {
+		return result;
+	}
+	result = ini_ReadIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("SETTINGS_MINOR_VERSION_NUMBER"), &(fixCsvData.settingsData.nppFixCsvSettingsMinorVersionNumber));
+	if (result != NOERROR) {
+		return result;
+	}
+	result = ini_ReadIntData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_LENGTH"), &(fixCsvData.settingsData.lengthsUnicodeDataLength));
+	if (result != NOERROR) {
+		return result;
+	}
+	long totalLength = fixCsvData.settingsData.lengthsUnicodeDataLength + 2;
+	fixCsvData.settingsData.lengthsUnicodeDataString = new wchar_t[totalLength];
+	result = ini_ReadStringData(&(fixCsvData.iniData), TEXT("SETTINGS"), TEXT("LENGTHS_UNICODE_DATA_STRING"), fixCsvData.settingsData.lengthsUnicodeDataString, totalLength);
+	if (result != NOERROR) {
+		return result;
+	}
+	enableMenuItem(fixCsvData.nppData._nppHandle, fixCsvData.functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, (fixCsvData.fixingData.integerSplitList != NULL));
 	return result;
 }
 
@@ -70,7 +96,8 @@ void nppFixCsv_FunctionFix()
 		delete[] fixCsvData.fixingData.filler;
 		fixCsvData.fixingData.filler = NULL;
 	}
-	fixCsvData.fixingData.filler = new char[fixCsvData.settingsData.splitIntegerValueMax + 1];
+	long totalLength = fixCsvData.settingsData.splitIntegerValueMax + 1L;
+	fixCsvData.fixingData.filler = new char[totalLength];
 	if (fixCsvData.fixingData.filler == NULL) {
 		Beep(1000, 10);
 		enableMenuItem(fixCsvData.nppData._nppHandle, fixCsvData.functionItems[NPP_PLUGIN_FIX_MENUITEM_INDEX]._cmdID, FALSE);

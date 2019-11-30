@@ -126,35 +126,26 @@ DWORD ini_ReadStringData(const IniDataPtr iniData, const TCHAR* section, const T
 // ini_ReadIntData
 //
 DWORD ini_ReadIntData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data) {
-	TCHAR buf[INI_NUMDIGIT];
-	DWORD readSize;
+	TCHAR numberString[INI_NUMDIGIT + 2];
 	DWORD result;
-	readSize = GetPrivateProfileString(section, key, _T(""), buf, (DWORD)INI_NUMDIGIT, iniData->fullPath);
-	if (readSize == 0) {
-		result = GetLastError();
-		if (result == ERROR_FILE_NOT_FOUND) {
-			return result;
-		}
+
+	result = ini_ReadStringData(iniData, section, key, numberString, INI_NUMDIGIT);
+	if (result == NOERROR) {
+		*data = _ttoi(numberString);
 	}
-	if ((readSize == (INI_NUMDIGIT - 1)) || (readSize == (INI_NUMDIGIT - 2))) {
-		*data = 0;
-		return 0;
-	}
-	*data = _ttoi(buf);
-	return readSize;
+	return result;
 }
 
 //
-// ini_ReadData
+// ini_ReadIntData
 //
-DWORD ini_ReadData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data) {
-	TCHAR buf[INI_NUMDIGIT];
-	DWORD readSize;
-	readSize = (int)GetPrivateProfileString(section, key, _T(""), buf, (DWORD)INI_NUMDIGIT, iniData->fullPath);
-	if ((readSize == (INI_NUMDIGIT - 1)) || (readSize == (INI_NUMDIGIT - 2))) {
-		*data = 0;
-		return 0;
+DWORD ini_ReadFloatIntData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data) {
+	TCHAR numberString[INI_NUMDIGIT + 2];
+	DWORD result;
+
+	result = ini_ReadStringData(iniData, section, key, numberString, INI_NUMDIGIT);
+	if (result == NOERROR) {
+		*data = (float)_tstof(numberString);
 	}
-	*data = (float)_tstof(buf);
-	return readSize;
+	return result;
 }

@@ -67,11 +67,11 @@ DWORD ini_WriteStringData(const IniDataPtr iniData, const TCHAR* section, const 
 DWORD ini_ReadStringData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, TCHAR* data, int dataSize);
 
 //
-// ini_ReadData
+// ini_ReadIntData
 //
-DWORD ini_ReadData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data);
+DWORD ini_ReadIntData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, int* data);
 
 //
-// ini_ReadData
+// ini_ReadFlotaData
 //
-DWORD ini_ReadData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data);
+DWORD ini_ReadFlotaData(const IniDataPtr iniData, const TCHAR* section, const TCHAR* key, float* data);
