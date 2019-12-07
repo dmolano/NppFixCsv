@@ -26,22 +26,122 @@
 SettingsDataPtr settingsDataPtr;
 
 //
+// hbrushEditBox
+//
+HBRUSH hbrushEditBox = 0;
+
+//
+// lengthData
+//
+LRESULT lengthData = 0;
+
+//
+// editLengthsFocus
+//
+BOOL editLengthsFocus = FALSE;
+
+//
+// settinsDlgProc_ClearEditLengthsHelpText
+//
+void settinsDlgProc_ClearEditLengthsHelpText(HWND hWndDlg) {
+	HWND editTextHwnd;
+
+	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+	SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)EDIT_TEXT_CLEAR_STRING);
+}
+
+//
+// settinsDlgProc_SetEditLengthsHelpText
+//
+void settinsDlgProc_SetEditLengthsHelpText(HWND hWndDlg) {
+	HWND editTextHwnd;
+
+	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+	SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)EDIT_TEXT_HELP_STRING);
+}
+
+//
+// settinsDlgProc_EditLengthsCommandEnChange
+//
+void settinsDlgProc_EditLengthsCommandEnChange(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	if (editLengthsFocus == TRUE) {
+		HWND editTextHwnd;
+		HWND buttonOkHwnd;
+
+		buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
+		editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
+		lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+		if (lengthData == 0) {
+			EnableWindow(buttonOkHwnd, FALSE);
+			Beep(1000, 10);
+		}
+		else {
+			EnableWindow(buttonOkHwnd, TRUE);
+		}
+	}
+}
+
+//
+// settinsDlgProc_EditLengthsCommand
+//
+void settinsDlgProc_EditLengthsCommand(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	switch (HIWORD(wParam)) {
+	case EN_CHANGE:
+		settinsDlgProc_EditLengthsCommandEnChange(hWndDlg, uMsg, wParam, lParam);
+		break;
+	case EN_SETFOCUS:
+		editLengthsFocus = TRUE;
+		if (lengthData == 0) {
+			settinsDlgProc_ClearEditLengthsHelpText(hWndDlg);
+		}
+		break;
+	case EN_KILLFOCUS:
+		editLengthsFocus = FALSE;
+		if (lengthData == 0) {
+			settinsDlgProc_SetEditLengthsHelpText(hWndDlg);
+		}
+		break;
+	}
+}
+
+//
+// settinsDlgProc_CtlColorEditLengths
+//
+LONG settinsDlgProc_CtlColorEditLengths(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	HDC hdcEdit = (HDC)wParam; //Get handles
+	if ((editLengthsFocus == FALSE) && (lengthData == 0)) {
+		SetTextColor(hdcEdit, COLOR_FOREGROUND_HELP); // Text color
+	}
+	else {
+		SetTextColor(hdcEdit, COLOR_FOREGROUND_NORMAL); // Text color
+	}
+	SetBkMode(hdcEdit, TRANSPARENT); // EditBox Backround Mode (note: OPAQUE can be used)
+	SetBkColor(hdcEdit, (LONG)hbrushEditBox); // Backround color for EditBox
+	return (LONG)hbrushEditBox; // Paint it
+}
+
+//
 // settinsDlgProc_InitEditAndButton
 //
 void settinsDlgProc_InitEditAndButton(HWND hWndDlg, SettingsDataPtr settingsDataPtr) {
-	HWND editTextHwnd;
-	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-	SetFocus(editTextHwnd);
 	HWND buttonOkHwnd;
 	buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
 	if (settingsDataPtr->lengthsUnicodeDataString != NULL) {
+		HWND editTextHwnd;
+
+		editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
 		SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(settingsDataPtr->lengthsUnicodeDataString));
+		lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
 		SendDlgItemMessage(editTextHwnd, IDC_EDIT_LENGTHS, EM_SETSEL, 0, -1);
 		EnableWindow(buttonOkHwnd, TRUE);
 	}
 	else {
 		EnableWindow(buttonOkHwnd, FALSE);
 	}
+	if (lengthData == 0) {
+		settinsDlgProc_SetEditLengthsHelpText(hWndDlg);
+	}
+	hbrushEditBox = CreateSolidBrush(RGB(255, 255, 255));
 }
 
 //
@@ -51,7 +151,7 @@ int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 	int result = FALSE;
 	HWND editTextHwnd;
 	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-	LRESULT lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
 	if (lengthData > 0) {
 		settingsDataPtr->lengthsUnicodeDataLength = lengthData;
 		wchar_t* lengthsUnicodeDataSettingsTemporal = new wchar_t[lengthData + 1];
@@ -83,8 +183,7 @@ int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 //
 INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (uMsg)
-	{
+	switch (uMsg) {
 	case WM_INITDIALOG:
 		if (lParam == NULL) {
 			EndDialog(hWndDlg, ERROR_INIT_DIALOG);
@@ -95,31 +194,16 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 		settinsDlgProc_InitEditAndButton(hWndDlg, settingsDataPtr);
 		break;
 	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
+		switch (LOWORD(wParam))	{
 		case IDC_EDIT_LENGTHS:
-			if (HIWORD(wParam) == EN_CHANGE)
-			{
-				HWND editTextHwnd;
-				editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-				LRESULT lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
-				HWND buttonOkHwnd;
-				buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
-				if (lengthData == 0) {
-					EnableWindow(buttonOkHwnd, FALSE);
-					Beep(1000, 10);
-				}
-				else {
-					EnableWindow(buttonOkHwnd, TRUE);
-				}
-			}
+			settinsDlgProc_EditLengthsCommand(hWndDlg, uMsg, wParam, lParam);
 			break;
 		case IDOK:
 			if (settingsDlgProc_IsLengthsOk(hWndDlg, wParam, lParam) == TRUE) {
 				EndDialog(hWndDlg, 1);
 			}
 			else {
-				::MessageBox(hWndDlg, TEXT("Error. Invalid lengths separator.\r\nRight format: number separator number ...\r\nExamples: 10;20;30\r\n\t10:20:30"), NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+				::MessageBox(hWndDlg, INVALID_LENGTHS_SEPARATOR_ERROR_STRING, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
 			}
 			break;
 		case IDCANCEL:
@@ -130,6 +214,12 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 	case WM_CLOSE:
 		EndDialog(hWndDlg, 0);
 		return TRUE;
+	case WM_CTLCOLOREDIT:
+		if (IDC_EDIT_LENGTHS == GetDlgCtrlID((HWND)lParam)) {
+			//only then pass back the background brush. else let default procedure do it. 
+			return settinsDlgProc_CtlColorEditLengths(hWndDlg, uMsg, wParam, lParam);
+		}
+		break;
 	}
 	return FALSE;
 }
