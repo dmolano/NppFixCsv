@@ -41,23 +41,37 @@ LRESULT lengthData = 0;
 BOOL editLengthsFocus = FALSE;
 
 //
+// balloonTipStatus
+// 
+int balloonTipStatus;
+
+//
+// editTextRect
+//
+RECT editTextRect;
+
+//
+// currentPoint
+//
+POINT currentPoint;
+
+//
+// lastPoint
+//
+POINT lastPoint;
+
+//
 // settinsDlgProc_ClearEditLengthsHelpText
 //
 void settinsDlgProc_ClearEditLengthsHelpText(HWND hWndDlg) {
-	HWND editTextHwnd;
-
-	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-	SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)EDIT_TEXT_CLEAR_STRING);
+	SendMessage(settingsDataPtr->editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)EDIT_TEXT_CLEAR_STRING);
 }
 
 //
 // settinsDlgProc_SetEditLengthsHelpText
 //
 void settinsDlgProc_SetEditLengthsHelpText(HWND hWndDlg) {
-	HWND editTextHwnd;
-
-	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-	SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)EDIT_TEXT_HELP_STRING);
+	SendMessage(settingsDataPtr->editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, (LPARAM)_T(EDIT_TEXT_HELP_STRING));
 }
 
 //
@@ -65,18 +79,13 @@ void settinsDlgProc_SetEditLengthsHelpText(HWND hWndDlg) {
 //
 void settinsDlgProc_EditLengthsCommandEnChange(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (editLengthsFocus == TRUE) {
-		HWND editTextHwnd;
-		HWND buttonOkHwnd;
-
-		buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
-		editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-		lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+		lengthData = SendMessage(settingsDataPtr->editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
 		if (lengthData == 0) {
-			EnableWindow(buttonOkHwnd, FALSE);
+			EnableWindow(settingsDataPtr->buttonOkHwnd, FALSE);
 			Beep(1000, 10);
 		}
 		else {
-			EnableWindow(buttonOkHwnd, TRUE);
+			EnableWindow(settingsDataPtr->buttonOkHwnd, TRUE);
 		}
 	}
 }
@@ -124,19 +133,16 @@ LONG settinsDlgProc_CtlColorEditLengths(HWND hWndDlg, UINT uMsg, WPARAM wParam, 
 // settinsDlgProc_InitEditAndButton
 //
 void settinsDlgProc_InitEditAndButton(HWND hWndDlg, SettingsDataPtr settingsDataPtr) {
-	HWND buttonOkHwnd;
-	buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
+	settingsDataPtr->buttonOkHwnd = GetDlgItem(hWndDlg, IDOK);
+	settingsDataPtr->editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
 	if (settingsDataPtr->lengthsUnicodeDataString != NULL) {
-		HWND editTextHwnd;
-
-		editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-		SendMessage(editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(settingsDataPtr->lengthsUnicodeDataString));
-		lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
-		SendDlgItemMessage(editTextHwnd, IDC_EDIT_LENGTHS, EM_SETSEL, 0, -1);
-		EnableWindow(buttonOkHwnd, TRUE);
+		SendMessage(settingsDataPtr->editTextHwnd, WM_SETTEXT, NOT_USED_WPARAM, LPARAM(settingsDataPtr->lengthsUnicodeDataString));
+		lengthData = SendMessage(settingsDataPtr->editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+		SendDlgItemMessage(settingsDataPtr->editTextHwnd, IDC_EDIT_LENGTHS, EM_SETSEL, 0, -1);
+		EnableWindow(settingsDataPtr->buttonOkHwnd, TRUE);
 	}
 	else {
-		EnableWindow(buttonOkHwnd, FALSE);
+		EnableWindow(settingsDataPtr->buttonOkHwnd, FALSE);
 	}
 	if (lengthData == 0) {
 		settinsDlgProc_SetEditLengthsHelpText(hWndDlg);
@@ -149,13 +155,11 @@ void settinsDlgProc_InitEditAndButton(HWND hWndDlg, SettingsDataPtr settingsData
 //
 int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 	int result = FALSE;
-	HWND editTextHwnd;
-	editTextHwnd = GetDlgItem(hWndDlg, IDC_EDIT_LENGTHS);
-	lengthData = SendMessage(editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
+	lengthData = SendMessage(settingsDataPtr->editTextHwnd, WM_GETTEXTLENGTH, NOT_USED_WPARAM, NOT_USED_LPARAM);
 	if (lengthData > 0) {
 		settingsDataPtr->lengthsUnicodeDataLength = lengthData;
 		wchar_t* lengthsUnicodeDataSettingsTemporal = new wchar_t[lengthData + 1];
-		SendMessage(editTextHwnd, WM_GETTEXT, lengthData + 1, LPARAM(lengthsUnicodeDataSettingsTemporal));
+		SendMessage(settingsDataPtr->editTextHwnd, WM_GETTEXT, lengthData + 1, LPARAM(lengthsUnicodeDataSettingsTemporal));
 		char* lengthsDataSettingsTemporal = wchar_t2char(lengthsUnicodeDataSettingsTemporal);
 		IntegerSplitPtr integerSplitListTemporal = integerSplitter_Split(lengthsDataSettingsTemporal, &(settingsDataPtr->splitIntegerValueMax));
 		delete[] lengthsDataSettingsTemporal;
@@ -183,6 +187,7 @@ int settingsDlgProc_IsLengthsOk(HWND hWndDlg, WPARAM wParam, LPARAM lParam) {
 //
 INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+//	wchar_t buffer[200];
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		if (lParam == NULL) {
@@ -192,9 +197,15 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 		settingsDataPtr = (SettingsDataPtr)lParam;
 		centerWndDlg(hWndDlg);
 		settinsDlgProc_InitEditAndButton(hWndDlg, settingsDataPtr);
+		balloonTipStatus = ONE_BALLONTIP_STATUS;
+		GetCursorPos(&lastPoint);
+		SetTimer(hWndDlg,             // handle to main window
+			IDT_MOUSETRAP,            // timer identifier
+			ELAPSE_MOUSETRAP,         // 2-second interval
+			(TIMERPROC)NULL);         // no timer callback
 		break;
 	case WM_COMMAND:
-		switch (LOWORD(wParam))	{
+		switch (LOWORD(wParam)) {
 		case IDC_EDIT_LENGTHS:
 			settinsDlgProc_EditLengthsCommand(hWndDlg, uMsg, wParam, lParam);
 			break;
@@ -203,7 +214,7 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 				EndDialog(hWndDlg, 1);
 			}
 			else {
-				::MessageBox(hWndDlg, INVALID_LENGTHS_SEPARATOR_ERROR_STRING, NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
+				::MessageBox(hWndDlg, _T(INVALID_LENGTHS_SEPARATOR_ERROR_STRING), NPP_PLUGIN_NAME, MB_ICONERROR | MB_OK);
 			}
 			break;
 		case IDCANCEL:
@@ -218,6 +229,45 @@ INT_PTR CALLBACK settingsDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wPar
 		if (IDC_EDIT_LENGTHS == GetDlgCtrlID((HWND)lParam)) {
 			//only then pass back the background brush. else let default procedure do it. 
 			return settinsDlgProc_CtlColorEditLengths(hWndDlg, uMsg, wParam, lParam);
+		}
+		break;
+	case WM_DESTROY:
+		KillTimer(hWndDlg, IDT_MOUSETRAP);
+		break;
+	case WM_TIMER:
+		GetWindowRect(settingsDataPtr->editTextHwnd, &editTextRect);
+		GetCursorPos(&currentPoint);
+//		swprintf_s(buffer, 200, TEXT("[%d,%d] - [%d,%d,%d,%d] %d - WM_TIMER"),
+//			currentPoint.x, currentPoint.y, editTextRect.left, editTextRect.top, editTextRect.right, editTextRect.bottom,
+//			PtInRect(&editTextRect, currentPoint));
+//		SendMessage(GetDlgItem(hWndDlg, IDC_STATIC_INFO), WM_SETTEXT, NOT_USED_WPARAM, LPARAM(&buffer));
+		switch (balloonTipStatus) {
+		case ONE_BALLONTIP_STATUS:
+			if (PtInRect(&editTextRect, currentPoint) == TRUE) {
+				if ((lastPoint.x == currentPoint.x) && (lastPoint.y == currentPoint.y)) {
+					EDITBALLOONTIP editBalloonTip;
+					editBalloonTip.cbStruct = sizeof(editBalloonTip);
+					editBalloonTip.pszTitle = _T(LENGTHS_EDIT_TEXT_BALLOONTIP_TITLE);
+					editBalloonTip.pszText = _T(LENGTHS_EDIT_TEXT_BALLOONTIP_TEXT);
+					editBalloonTip.ttiIcon = TTI_INFO;
+					balloonTipStatus = TWO_BALLONTIP_STATUS;
+					lastPoint.x = 0;
+					lastPoint.y = 0;
+					Edit_ShowBalloonTip(settingsDataPtr->editTextHwnd, &editBalloonTip);
+				}
+				else {
+					lastPoint = currentPoint;
+				}
+			}
+			else {
+				lastPoint = currentPoint;
+			}
+			break;
+		case TWO_BALLONTIP_STATUS:
+			if (PtInRect(&editTextRect, currentPoint) == FALSE) {
+				balloonTipStatus = ONE_BALLONTIP_STATUS;
+			}
+			break;
 		}
 		break;
 	}

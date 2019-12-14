@@ -187,6 +187,7 @@ void nppFixCsv_CommandMenuInit()
 //
 void nppFixCsv_PluginDllProcessAttach(HANDLE hModule) {
 	fixCsvData.g_DllhInst = (HINSTANCE)hModule;
+	fixCsvData.settingsData.g_DllhInst = fixCsvData.g_DllhInst;
 	memset(&(fixCsvData.fixingData), 0, sizeof(FixingData));
 }
 
