@@ -23,8 +23,7 @@
 //
 // centerWndDlg
 //
-void centerWndDlg(const HWND hWndDlg)
-{
+void centerWndDlg(const HWND hWndDlg) {
 	HWND hwndOwner;
 	RECT rc, rcDlg, rcOwner;
 
@@ -58,5 +57,4 @@ void enableMenuItem(const HWND hWnd, const int cmdID, const int enable) {
 	HMENU hMenu = (HMENU)::SendMessage(hWnd, NPPM_GETMENUHANDLE, NPPPLUGINMENU, 0);
 	::EnableMenuItem(hMenu, cmdID,
 		MF_BYCOMMAND | (enable ? MF_ENABLED : MF_DISABLED) | (enable ?  MF_DEFAULT: MF_GRAYED));
-
 }

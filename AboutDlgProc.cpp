@@ -25,8 +25,7 @@
 //
 INT_PTR CALLBACK aboutDlgProc_DialogFunc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (uMsg)
-	{
+	switch (uMsg) {
 	case WM_INITDIALOG:
 		centerWndDlg(hWndDlg);
 		break;
