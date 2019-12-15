@@ -51,7 +51,7 @@ END
 // Dialog
 //
 
-IDD_DIALOG_ABOUT DIALOGEX 0, 0, 311, 146
+IDD_DIALOG_ABOUT DIALOGEX 0, 0, 249, 117
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 CAPTION "FixCsv - About"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -60,7 +60,7 @@ BEGIN
     GROUPBOX        "Plugin",IDC_STATIC,7,7,297,19
     CTEXT           "Dionisio Molano Robledo",IDC_STATIC,53,34,206,8
     CTEXT           "NppFixCsv a.k.a FixCsv",IDC_STATIC,53,14,206,8
-    CTEXT           "2.1",IDC_STATIC,53,52,206,8
+    CTEXT           "2.2",IDC_STATIC,53,52,206,8
     CTEXT           "GPL v.3.0",IDC_STATIC,53,71,206,8
     GROUPBOX        "Author",IDC_STATIC,7,26,297,19
     GROUPBOX        "Version",IDC_STATIC,7,45,297,19
