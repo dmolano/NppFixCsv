@@ -275,9 +275,9 @@ DWORD WINAPI fixDlgProc_FixAllLines(LPVOID lpParam) {
 //
 HWND fixDlgProc_DialogFunc_InitProgressBar(FixCsvDataPtr fixCsvDataPtr) {
 	HWND progressBarHandle = GetDlgItem(fixCsvDataPtr->fixingData.hWndDlg, IDC_PROGRESSBAR_FIXING);
-	SendMessage(fixCsvDataPtr->fixingData.progressBarHandle, PBM_SETRANGE32, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr->fixingData.sciDocumentLinesCount);
-	SendMessage(fixCsvDataPtr->fixingData.progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_NORMAL, NOT_USED_LPARAM);
-	SendMessage(fixCsvDataPtr->fixingData.progressBarHandle, PBM_SETSTEP, (WPARAM)1, NOT_USED_LPARAM);
+	SendMessage(progressBarHandle, PBM_SETRANGE32, NOT_USED_WPARAM, (LPARAM)fixCsvDataPtr->fixingData.sciDocumentLinesCount);
+	SendMessage(progressBarHandle, PBM_SETSTATE, (WPARAM)PBST_NORMAL, NOT_USED_LPARAM); // Meaning: In progress.
+	SendMessage(progressBarHandle, PBM_SETSTEP, (WPARAM)1, NOT_USED_LPARAM);
 	return progressBarHandle;
 }
 //
